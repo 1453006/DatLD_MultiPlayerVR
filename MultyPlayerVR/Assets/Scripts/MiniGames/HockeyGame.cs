@@ -7,7 +7,7 @@ public class HockeyGame : GameCore {
  
     public Transform[] StrikerSpawnPoint;
     public static HockeyGame instance;
-
+    public List<GameObject> listStriker;
     short countDownDuration = 5;
 
 #region Objects In Game
@@ -33,7 +33,7 @@ public class HockeyGame : GameCore {
 	
 	// Update is called once per frame
 	void Update () {
-
+        base.UpdateGameCore();
         int displayTime = 10000;
         base.OnUpdateGUI();
         if (currentState == State.CountDown && base.startTime != 0)
@@ -51,7 +51,8 @@ public class HockeyGame : GameCore {
 
     }
 
-  
+
+
     public override void OnStartGame()
     {
         base.OnStartGame();
@@ -68,7 +69,7 @@ public class HockeyGame : GameCore {
         }
 
         GameObject striker = PhotonNetwork.Instantiate(strikerPrefab.name, pos, Quaternion.identity, 0);
-        striker.GetPhotonView().RPC("SetParent", PhotonTargets.AllViaServer, this.gameObject.name);
+       // striker.GetPhotonView().RPC("SetParent", PhotonTargets.AllViaServer, this.gameObject.name);
 
         //set active BALL
         ball.SetActive(true);

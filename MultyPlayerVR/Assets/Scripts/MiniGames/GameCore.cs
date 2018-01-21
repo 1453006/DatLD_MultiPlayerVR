@@ -19,6 +19,7 @@ public class GameCore : PunBehaviour
     public State currentState;
     public GameType currentGame;
 
+    public float countDownDelay = 1f;
     public double startTime = 0;
 
     #region UI
@@ -40,7 +41,8 @@ public class GameCore : PunBehaviour
 
     public enum State
     {
-        Waiting = 0,
+        None,
+        Waiting ,
         CountDown,
         Start,
         Playing,
@@ -53,6 +55,10 @@ public class GameCore : PunBehaviour
       
     }
 
+    private void Awake()
+    {
+        SetState(State.None);
+    }
     // Update is called once per frame
     void Update()
     {
@@ -72,6 +78,18 @@ public class GameCore : PunBehaviour
         txtScore_remote.text = score_remote.ToString();
     }
 
+    public void OnDisableGame()
+    {
+        GameObject[] listGO = GameObject.FindGameObjectsWithTag("InGameObject");
+        foreach (GameObject go in listGO)
+            PhotonNetwork.Destroy(go);
+
+    }
+    void StartCountDown()
+    {
+        OnCountDown();
+    }
+
     public void SetState(State state)
     {
         switch (state)
@@ -80,9 +98,10 @@ public class GameCore : PunBehaviour
                     OnSetGUI();
                     break;
                 }
-            case State.CountDown:{
-                    OnCountDown();
-                    break;
+	            case State.CountDown:{
+	                   //Player.instance.ShowPlayerMsgViaPhoton("Starting game...",1f);
+	                    Invoke("StartCountDown",countDownDelay);
+	                    break;
                 }
             case State.Start:
                 {
@@ -97,12 +116,30 @@ public class GameCore : PunBehaviour
         currentState = state;
     }
 
+    protected void UpdateGameCore()
+    {
+        if (currentState == State.None)
+        {
+            if (PhotonNetwork.room != null && PhotonNetwork.room.PlayerCount == 2)
+            {
+                Debug.Log("OnJoinedRoom: Player Count == 2");
+                SetState(State.CountDown);
+            }
+            else
+            {
+                Debug.Log("Waiting for another player");
+            }
+        }
+    }
+
+
     public virtual void OnStartGame()
     {
       
 
        
     }
+
 
     public virtual void OnCountDown()
     {

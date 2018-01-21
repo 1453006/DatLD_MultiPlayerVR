@@ -55,6 +55,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
 	// Update is called once per frame
 	void Update () {
 
+        UpdateGameCore();
         int displayTime = 10000;
         base.OnUpdateGUI();
         if (currentState == State.CountDown && base.startTime != 0)

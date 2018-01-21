@@ -5,9 +5,9 @@ using DG.Tweening;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler{
-
-    public GameObject fakePhysicObject;
+public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEnterHandler,IPointerExitHandler{
+    public string extentData;
+    public GameObject extentGO;
 
     Rigidbody rigidBody;
     ObjectInGame instance;
@@ -27,13 +27,14 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler{
     private float correctSpeed;
 
     private float initScaleY;
-
+    
 
     public enum TYPE
     {
         Striker,
         Ball,
-        Button
+        MathButton,
+        SwitchGameBtn
     };
 
     public ObjectInGame.TYPE type;
@@ -54,8 +55,6 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler{
 
         direct = new Vector3(1, 0, 0);
 
-        if (fakePhysicObject)
-            fakePhysicObject.transform.DOMove(HockeyGame.instance.playerPos[1].transform.position, 10f);
 
         currentSpeed = speed;
         initScaleY = this.transform.localScale.y;
@@ -120,14 +119,24 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler{
     }
 
 #region event system
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        Player.instance.SetState(Player.PlayerState.Selecting);
+    }
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        Player.instance.SetState(Player.PlayerState.None);
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
+       
         switch (type)
         {
-            case TYPE.Button:
+            case TYPE.MathButton:
                 {
                     Debug.Log("Button clicked");
-                   
+
                     Sequence sequence = DOTween.Sequence();
                     sequence.Append(this.transform.DOScaleY(initScaleY * 0.5f, 0.25f).SetEase(Ease.OutSine));
                     sequence.Append(this.transform.DOScaleY(initScaleY, 0.5f).SetEase(Ease.OutBounce));
@@ -143,6 +152,24 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler{
                     string answer = this.GetComponentInChildren<Text>().text.Trim();
                     int number = int.Parse(answer);
                     MathGame.instance.MakeTurn(number);
+                    break;
+                }
+            case TYPE.SwitchGameBtn:
+                {
+                    Debug.Log("SwitchGameBtn clicked");
+                    Sequence sequence = DOTween.Sequence();
+                    sequence.Append(this.transform.DOScaleY(initScaleY * 0.5f, 0.25f).SetEase(Ease.OutSine));
+                    sequence.Append(this.transform.DOScaleY(initScaleY, 0.5f).SetEase(Ease.OutBounce));
+
+
+                    if (PhotonNetwork.isMasterClient && MiniGameManager.instance.currentGamePrefab == null)
+                    {
+
+                        MiniGameManager.instance.currentGamePrefab = PhotonNetwork.Instantiate(extentGO.name, extentGO.transform.position, Quaternion.identity, 0);
+                      
+                    }
+
+                   
                     break;
                 }
         }
@@ -259,7 +286,9 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler{
         else
         {
             transform.DOMove(correctPos, 0.2f);
+            
         }
+
     }
     void OnTriggerEnterStriker(Collider other)
     {
@@ -334,6 +363,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler{
             targetPos = hit.point;
             transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, Random.Range(15, 30), transform.rotation.eulerAngles.z);
             tweenDoMove = transform.DOMove(hit.point, timeToEnd);
+           
             
         }
 

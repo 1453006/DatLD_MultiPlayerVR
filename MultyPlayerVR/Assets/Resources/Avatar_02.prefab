@@ -530,7 +530,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1804012459178912
 GameObject:
   m_ObjectHideFlags: 1
@@ -1360,7 +1360,7 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 4899614007890274}
   - {fileID: 4255240184671784}
-  - {fileID: 4863989278002796}
+  - {fileID: 4044841929989552}
   - {fileID: 4267190918803444}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0

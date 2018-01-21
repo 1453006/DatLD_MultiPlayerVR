@@ -41,7 +41,7 @@ GameObject:
   - component: {fileID: 65047420640724380}
   m_Layer: 2
   m_Name: Striker
-  m_TagString: Untagged
+  m_TagString: InGameObject
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -140,11 +140,11 @@ MonoBehaviour:
   OwnerShipWasTransfered: 0
   prefixBackup: -1
   synchronization: 3
-  onSerializeTransformOption: 3
+  onSerializeTransformOption: 0
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 0
   ObservedComponents:
-  - {fileID: 4480263450602634}
+  - {fileID: 114178103980935366}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
@@ -161,6 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adee815635a6123489a737eb9fca1cd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fakePhysicObject: {fileID: 0}
+  extentData: 
+  extentGO: {fileID: 0}
   speed: 0
   type: 0
