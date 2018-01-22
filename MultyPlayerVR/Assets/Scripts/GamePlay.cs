@@ -37,19 +37,19 @@ new List<GvrPermissionsRequester.PermissionStatus>();
 	void Update () {
         
 
-        if (GvrControllerInput.ClickButtonDown)
-        {
-            if (Time.time - lastClickTime < catchTime)
-            {
-                Debug.Log("double click");
-            }
-            else
-            {
-                //normal click
-                Debug.Log("single click");
-            }
-            lastClickTime = Time.time;
-        }
+        //if (GvrControllerInput.ClickButtonDown)
+        //{
+        //    if (Time.time - lastClickTime < catchTime)
+        //    {
+        //        Debug.Log("double click");
+        //    }
+        //    else
+        //    {
+        //        //normal click
+        //        Debug.Log("single click");
+        //    }
+        //    lastClickTime = Time.time;
+        //}
       
     }
 

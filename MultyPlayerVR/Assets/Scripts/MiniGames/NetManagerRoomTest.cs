@@ -52,5 +52,9 @@ public class NetManagerRoomTest : MonoBehaviour {
 
         PhotonNetwork.Instantiate(avatarPrefabs.name, GamePlay.instance.spawnPoint, Quaternion.identity, 0);
      
+        if(PhotonNetwork.isMasterClient)
+        {
+
+        }
     }
 }

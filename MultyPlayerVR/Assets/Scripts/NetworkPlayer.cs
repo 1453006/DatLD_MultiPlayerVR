@@ -14,7 +14,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
     public float health;
 
     private Vector3 lowerJawInitPos;
-    
+    public Transform handItem;
 
 #region Voice Regconition
     public AudioSource audioSource;
@@ -83,6 +83,14 @@ public class NetworkPlayer : Photon.MonoBehaviour {
 
     }
 	
+
+    public void AttachHandItem(Transform item)
+    {
+        handItem = item;
+        item.transform.SetParent(visualHandTransform);
+        item.transform.localPosition = Vector3.zero; 
+    }
+
 	// Update is called once per frame
 	void Update () {
 
@@ -112,7 +120,6 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             // Lerping smooths the movement
             if (cameraTransform)
             {
-              
                 visualHead.rotation = cameraTransform.rotation;
             }
             if(controllerTransform)
@@ -121,7 +128,13 @@ public class NetworkPlayer : Photon.MonoBehaviour {
                 visualHandTransform.rotation = controllerTransform.rotation;
                // visualHandTransform.position = controllerTransform.position;
             }
-           
+            if (handItem)
+            {
+                handItem.position = controllerTransform.position;
+                handItem.rotation = controllerTransform.rotation;
+                // visualHandTransform.position = controllerTransform.position;
+            }
+
         }
 
 

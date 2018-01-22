@@ -70,4 +70,6 @@ MonoBehaviour:
   - SetStartTime
   - AddScore2Players
   - SendQuestion
+  - DestroyObject
+  - UpdateChildHP
   DisableAutoOpenWizard: 1

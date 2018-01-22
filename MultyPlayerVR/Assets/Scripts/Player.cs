@@ -28,13 +28,16 @@ public class Player : MonoBehaviour {
     public GameObject visualPlayer;
     public DaydreamElements.Teleport.TeleportController teleportController;
     public static Player instance;
-
+  
+    private bool isHandAttached = false;
+    public Transform handItem = null;
     public enum PlayerState
     {
         None,
         Teleporting,
         Selecting,
-        PlayingGame
+        PlayingGame,
+        
     };
 
     private void Awake()
@@ -49,29 +52,60 @@ public class Player : MonoBehaviour {
         transform.position = GamePlay.instance.spawnPoint;
 	}
 
+    // Update is called once per frame
+    void Update()
+    {
+        //test voice
+        UpdateState();
+        if (visualPlayer)
+        {
+            visualPlayer.transform.position = this.transform.position;
+            visualPlayer.transform.rotation = this.transform.rotation;
+        }
+        if (isHandAttached)
+        {
+            if(GvrControllerInput.HomeButtonDown)
+            {
+
+            }
+        }
+    }
+
     public void SetState(PlayerState state)
-    { 
-       
-        if (state == PlayerState.None)
+    {
+        switch (state)
         {
-            Invoke("enableTeleport", 1f);
-            defaultLaser.SetActive(true);
-        }
-        else if (state == PlayerState.Teleporting)
-        {
-            defaultLaser.SetActive(false);
-        }
-        else if (state == PlayerState.Selecting)
-        {
-            teleportController.gameObject.SetActive(false);
-        }
-        else if (state == PlayerState.PlayingGame)
-        {
-            teleportController.gameObject.SetActive(false);
-            defaultLaser.SetActive(true);
+          
+            case PlayerState.None:
+                {
+                    Invoke("enableTeleport", 1f);
+                    defaultLaser.SetActive(true);
+                }
+                break;
+            case PlayerState.Teleporting:
+                {
+                    defaultLaser.SetActive(false);
+                    teleportController.gameObject.SetActive(true);
+                }
+                break;
+            case PlayerState.Selecting:
+                {
+                    defaultLaser.SetActive(true);
+                    teleportController.gameObject.SetActive(false);
+                }
+                break;
+            case PlayerState.PlayingGame:
+                {
+                    defaultLaser.SetActive(true);
+                    teleportController.gameObject.SetActive(false);
+
+                }
+                break;
+            
+            default:
+                break;
         }
 
-     
         currentState = state;
 
     }
@@ -95,24 +129,32 @@ public class Player : MonoBehaviour {
         {
             teleportController.gameObject.SetActive(false);
         }
+       
+
 
     }
 
     
-
-
-    // Update is called once per frame
-    void Update () {
-
-    
-        //test voice
-       
-        UpdateState();
-
+    public void OnAttachItemToHand(Transform item)
+    {
+        //SetState(PlayerState.Holding); 
         if (visualPlayer)
         {
-            visualPlayer.transform.position = this.transform.position;
-            visualPlayer.transform.rotation = this.transform.rotation;
+            handItem = item;
+            isHandAttached = true;
+            item.GetComponent<Rigidbody>().isKinematic = true;
+            NetworkPlayer netPlayer = visualPlayer.GetComponent<NetworkPlayer>();
+            netPlayer.AttachHandItem(item);
+            item.gameObject.layer = 2;
         }
     }
-}
+
+    public void OnDetachItemFromHand()
+    {
+        if (visualPlayer)
+        {
+            handItem.SetParent(null);
+        }
+    }
+
+ }

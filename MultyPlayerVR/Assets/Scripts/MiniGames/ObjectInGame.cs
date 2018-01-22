@@ -34,7 +34,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         Striker,
         Ball,
         MathButton,
-        SwitchGameBtn
+        SwitchGameBtn,
+        WEAPON_MELEE,
     };
 
     public ObjectInGame.TYPE type;
@@ -88,6 +89,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     stream.SendNext(transform.position);
                     break;
                 }
+            case TYPE.WEAPON_MELEE:
             case TYPE.Ball:
                 {
                     // We own this player: send the others our data
@@ -108,6 +110,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     this.correctPos = (Vector3)stream.ReceiveNext();
                     break;
                 }
+            case TYPE.WEAPON_MELEE:
             case TYPE.Ball:
                 {
                     // Network player, receive data
@@ -125,7 +128,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     }
     public void OnPointerExit(PointerEventData eventData)
     {
-        Player.instance.SetState(Player.PlayerState.None);
+         Player.instance.SetState(Player.PlayerState.None);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -172,6 +175,13 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                    
                     break;
                 }
+            case TYPE.WEAPON_MELEE:
+                {
+                    //pickup item script need update
+                    Pickup();
+                    break;
+                }
+
         }
 
     }
@@ -210,6 +220,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     OnTriggerEnterBall(other);
                     break;
                 }
+            case TYPE.WEAPON_MELEE:
+                {
+                    OnTriggerEnterAXE(other);
+                    break;
+                }
         }
     }
 
@@ -234,10 +249,18 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     UpdateBall();
                     break;
                 }
+            case TYPE.WEAPON_MELEE:
+                {
+                    UpdateMelee();
+                    break;
+                }
         }
     }
 
     #region common
+    public bool SentPickup;
+    public bool PickupIsMine;
+
     [PunRPC]
     public void SetParent(string parent)
     {
@@ -254,6 +277,42 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
 
     }
+
+    [PunRPC]
+    public void PunPickup(PhotonMessageInfo msgInfo)
+    {
+        // when this client's RPC gets executed, this client no longer waits for a sent pickup and can try again
+        if (msgInfo.sender.IsLocal) this.SentPickup = false;
+
+        // In this solution, picked up items are disabled. They can't be picked up again this way, etc.
+        // You could check "active" first, if you're not interested in failed pickup-attempts.
+        if (!this.gameObject.GetActive())
+        {
+            return;     // makes this RPC being ignored
+        }
+        // if the RPC isn't ignored by now, this is a successful pickup. this might be "my" pickup and we should do a callback
+        this.PickupIsMine = msgInfo.sender.IsLocal;
+        //actions
+        if (this.PickupIsMine)
+        {
+            photonView.TransferOwnership(PhotonNetwork.player.ID);
+            Player.instance.SetState(Player.PlayerState.None);
+            Player.instance.OnAttachItemToHand(this.transform);
+        }
+    }
+
+    public void Pickup()
+    {
+        if (this.SentPickup)
+        {
+            // skip sending more pickups until the original pickup-RPC got back to this client
+            return;
+        }
+
+        this.SentPickup = true;
+        this.photonView.RPC("PunPickup", PhotonTargets.AllViaServer);
+    }
+
     #endregion
 
     #region Striker
@@ -286,6 +345,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         else
         {
             transform.DOMove(correctPos, 0.2f);
+            transform.DORotate(correctRot, 0.2f);
             
         }
 
@@ -415,7 +475,31 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     }
     #endregion
 
-#region Button
-   
-#endregion
+    #region Button
+
+    #endregion
+
+    #region MELEE
+
+    void UpdateMelee()
+    {
+        if (photonView.isMine)
+        {
+
+        }
+        else
+        {
+            transform.DOMove(correctPos, 0.2f);
+        }
+           
+    }
+    void OnTriggerEnterAXE(Collider other)
+    {
+        GroupObject obj = other.GetComponent<GroupObject>();
+        if(obj)
+        {
+            obj.UpdateHP(-10f);
+        }
+    }
+    #endregion
 }
