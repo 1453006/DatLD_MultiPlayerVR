@@ -253,7 +253,8 @@ namespace DaydreamElements.ObjectManipulation
             if (Player.instance.currentState != Player.PlayerState.Selecting)
                 return;
             Hover = false;
-            Player.instance.SetState(Player.PlayerState.None);
+            if(Player.instance.currentState != Player.PlayerState.PlayingGame)
+                Player.instance.SetState(Player.PlayerState.None);
         }
 
         protected virtual void OnSelect()

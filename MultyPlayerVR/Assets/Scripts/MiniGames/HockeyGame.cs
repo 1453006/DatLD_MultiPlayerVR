@@ -69,7 +69,10 @@ public class HockeyGame : GameCore {
         }
 
         GameObject striker = PhotonNetwork.Instantiate(strikerPrefab.name, pos, Quaternion.identity, 0);
-       // striker.GetPhotonView().RPC("SetParent", PhotonTargets.AllViaServer, this.gameObject.name);
+        if(base.listInGameObj == null)
+            base.listInGameObj = new List<GameObject>();
+        base.listInGameObj.Add(striker);
+        // striker.GetPhotonView().RPC("SetParent", PhotonTargets.AllViaServer, this.gameObject.name);
 
         //set active BALL
         ball.SetActive(true);

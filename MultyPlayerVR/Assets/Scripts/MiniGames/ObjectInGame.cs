@@ -34,8 +34,12 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         Striker,
         Ball,
         MathButton,
+        MathBallon,
         SwitchGameBtn,
         WEAPON_MELEE,
+        MathGun,
+        MathBullet
+        
     };
 
     public ObjectInGame.TYPE type;
@@ -47,10 +51,25 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         correctPos = this.transform.position;
         correctRot = this.transform.rotation;
     }
+
+    private void OnEnable()
+    {
+        if (type == TYPE.MathBallon)
+        {
+            Vector3 initScale = transform.localScale;
+            transform.localScale *=  0.2f;
+            transform.DOScale(initScale,1f);
+        }
+        if(type == TYPE.MathBullet)
+        {
+            Invoke("AutoReturnToPool",3f);
+        }
+    }
     // Use this for initialization
     void Start() {
 
         InitObject();
+        
         rigidBody = this.GetComponent<Rigidbody>();
         meshRenderer = this.GetComponent<MeshRenderer>();
 
@@ -124,11 +143,13 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 #region event system
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Player.instance.SetState(Player.PlayerState.Selecting);
+        if(Player.instance.currentState != Player.PlayerState.PlayingGame)
+         Player.instance.SetState(Player.PlayerState.Selecting);
     }
     public void OnPointerExit(PointerEventData eventData)
     {
-         Player.instance.SetState(Player.PlayerState.None);
+        if (Player.instance.currentState != Player.PlayerState.PlayingGame)
+            Player.instance.SetState(Player.PlayerState.None);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -140,6 +161,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 {
                     Debug.Log("Button clicked");
 
+                    Player.instance.SetState(Player.PlayerState.PlayingGame);
                     Sequence sequence = DOTween.Sequence();
                     sequence.Append(this.transform.DOScaleY(initScaleY * 0.5f, 0.25f).SetEase(Ease.OutSine));
                     sequence.Append(this.transform.DOScaleY(initScaleY, 0.5f).SetEase(Ease.OutBounce));
@@ -159,6 +181,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 }
             case TYPE.SwitchGameBtn:
                 {
+                    Player.instance.SetState(Player.PlayerState.PlayingGame);
                     Debug.Log("SwitchGameBtn clicked");
                     Sequence sequence = DOTween.Sequence();
                     sequence.Append(this.transform.DOScaleY(initScaleY * 0.5f, 0.25f).SetEase(Ease.OutSine));
@@ -225,6 +248,13 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     OnTriggerEnterAXE(other);
                     break;
                 }
+            case TYPE.MathBullet:
+                {
+                    OnTriggerEnterMathBullet(other);
+                    break;
+                }
+
+
         }
     }
 
@@ -252,6 +282,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             case TYPE.WEAPON_MELEE:
                 {
                     UpdateMelee();
+                    break;
+                }
+            case TYPE.MathGun:
+                {
+                    UpdateMathGun();
                     break;
                 }
         }
@@ -315,6 +350,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     #endregion
 
+    /// BEGIN HOCKEY GAME
     #region Striker
     void UpdateStriker()
     {
@@ -345,7 +381,6 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         else
         {
             transform.DOMove(correctPos, 0.2f);
-            transform.DORotate(correctRot, 0.2f);
             
         }
 
@@ -395,8 +430,10 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         }
 
         Vector3 contact = other.gameObject.GetComponent<Collider>().ClosestPointOnBounds(transform.position).normalized;
-        direct = Vector3.Reflect(transform.position,contact);
+        direct = Vector3.Reflect(transform.position, contact);
         direct.y = 0;
+
+
 
         ObjectInGame objClass = other.GetComponent<ObjectInGame>();
         if (objClass)
@@ -412,7 +449,9 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
         float timeToEnd = 0f;
         Vector3 targetPos = Vector3.zero;
+       
         RaycastHit hit;
+
         if (Physics.Raycast(transform.position, transform.TransformDirection(direct), out hit))
         {
             Debug.Log("is raycast");
@@ -421,12 +460,9 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             //Debug.Log(" time is :" + speed / dist);
             timeToEnd = dist / currentSpeed;
             targetPos = hit.point;
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, Random.Range(15, 30), transform.rotation.eulerAngles.z);
-            tweenDoMove = transform.DOMove(hit.point, timeToEnd);
-           
-            
+          //  transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, Random.Range(15, 30), transform.rotation.eulerAngles.z);
+            tweenDoMove = transform.DOMove(hit.point, timeToEnd).SetEase(Ease.Linear);
         }
-
 
         if (PhotonNetwork.isMasterClient)
             photonView.RPC("AddForceOverNetwork", PhotonTargets.AllViaServer
@@ -450,20 +486,30 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     [PunRPC]
     public void AddForceOverNetwork(Vector3 targetPos,float timeToEnd, int timestamp)
     {
-        float delay = 1.0f / (PhotonNetwork.ServerTimestamp - timestamp);
-        Debug.Log("AddForceOverNetwork called, delay:" + delay);
-        
-        if (delay > timeToEnd)
-            return;
-        //0.1f is time DOmove called
-        //Vector3 nextPos = CalcNextPosition(delay, posWhenSend, correctSpeed, correctDirect);
-        if (tweenDoMove != null)
-            tweenDoMove.ChangeValues(transform.position,targetPos,timeToEnd - delay);
+        float delay = /*1.0f /*/ (PhotonNetwork.ServerTimestamp - timestamp)/1000f;
+        Debug.Log("AddForceOverNetwork called, delay:" + delay + "-end time"+ timeToEnd);
 
-        //tweenDoMove.timeScale *= (tweenDoMove.Duration() - delay) / tweenDoMove.Duration();
-      
-        //direct = correctDirect;
-        //speed = correctSpeed;
+        //if (delay > timeToEnd)
+        //    return;
+        //if (tweenDoMove != null)
+        //    tweenDoMove.ChangeValues(transform.position,targetPos,timeToEnd - delay);
+
+        //transform.DOKill();
+        //delay <= timeToEnd
+        if (delay <= timeToEnd)
+        {
+           
+            tweenDoMove = transform.DOMove(targetPos, timeToEnd - delay).SetEase(Ease.Linear);
+        }
+        else
+        {
+            //tweenDoMove = null;
+            //transform.DOKill();
+            //transform.position = targetPos;
+           
+            transform.position = targetPos;
+        }
+
     }
 
     
@@ -474,7 +520,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         return a.GetPoint(dist);   
     }
     #endregion
-
+    /// END HOCKEY GAME
+   
     #region Button
 
     #endregion
@@ -490,6 +537,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         else
         {
             transform.DOMove(correctPos, 0.2f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, correctRot, Time.deltaTime * 10f);
         }
            
     }
@@ -502,4 +550,75 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         }
     }
     #endregion
+
+    /// BEGIN MATH GAME
+
+    #region MathGun
+    private static float BULLETSTRENGTH = 20.0f;
+    void StartMathGun()
+    {
+        
+    }
+
+   
+    void UpdateMathGun()
+    {
+        if (!photonView.isMine)
+            return;
+
+        if (GvrControllerInput.ClickButtonUp)
+        {
+            //shoot
+            GameObject bullet = FBPoolManager.instance.getPoolObject("Math_Gun_BULLET");
+            if (bullet)
+            {
+                Transform shootMarker = transform.findChildRecursively("shoot_marker");
+                if(shootMarker)
+                    bullet.transform.position = shootMarker.position;
+                else
+                    bullet.transform.position = transform.position;
+
+                bullet.transform.rotation = transform.rotation;
+
+                Rigidbody rb = bullet.addMissingComponent<Rigidbody>();
+                ObjectInGame script = bullet.addMissingComponent<ObjectInGame>();
+                script.type = TYPE.MathBullet;
+
+                rb.velocity = Vector3.zero; //reset force 
+                bullet.SetActive(true);
+                rb.AddForce(transform.forward * BULLETSTRENGTH, ForceMode.Impulse);
+
+
+            }
+        }
+    }
+    #endregion
+
+    #region MathBullet
+    void AutoReturnToPool()
+    {
+        //to return bullet to pool
+        FBPoolManager.instance.returnObjectToPool(this.gameObject);
+    }
+
+    void OnTriggerEnterMathBullet(Collider other)
+    {
+        if(MathGame.instance.isSentMove())
+        {
+            Debug.Log("SENT MOVE RETURN");
+            return;
+        }
+
+        if (other.gameObject.name.Contains("Math_Balloon"))
+        {
+            string answer = other.GetComponentInChildren<TextMesh>().text.Trim();
+            int number = int.Parse(answer);
+            MathGame.instance.MakeTurn(number);
+
+            other.gameObject.SetActive(false);
+        }
+    }
+    #endregion
+
+    /// END MATH GAME
 }

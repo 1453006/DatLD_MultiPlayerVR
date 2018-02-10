@@ -19,6 +19,8 @@ public class GameCore : PunBehaviour
     public State currentState;
     public GameType currentGame;
 
+    public List<GameObject> listInGameObj;
+
     public float countDownDelay = 1f;
     public double startTime = 0;
 
@@ -55,6 +57,7 @@ public class GameCore : PunBehaviour
       
     }
 
+
     private void Awake()
     {
         SetState(State.None);
@@ -66,9 +69,9 @@ public class GameCore : PunBehaviour
     }
     public void OnUpdateGUI()
     {
-        countDown.transform.faceToMainCamera();
-        txtScore_master.transform.faceToMainCamera();
-        txtScore_remote.transform.faceToMainCamera();
+       // countDown.transform.faceToMainCamera();
+       // txtScore_master.transform.faceToMainCamera();
+        //txtScore_remote.transform.faceToMainCamera();
     }
     public void OnSetGUI()
     {
@@ -80,9 +83,13 @@ public class GameCore : PunBehaviour
 
     public void OnDisableGame()
     {
-        GameObject[] listGO = GameObject.FindGameObjectsWithTag("InGameObject");
-        foreach (GameObject go in listGO)
-            PhotonNetwork.Destroy(go);
+        // GameObject[] listGO = GameObject.FindGameObjectsWithTag("InGameObject");
+        if (listInGameObj != null && listInGameObj.Count > 0)
+        {
+
+            foreach (GameObject go in listInGameObj)
+                PhotonNetwork.Destroy(go);
+        }
 
     }
     void StartCountDown()
@@ -120,7 +127,7 @@ public class GameCore : PunBehaviour
     {
         if (currentState == State.None)
         {
-            if (PhotonNetwork.room != null && PhotonNetwork.room.PlayerCount == 1)
+            if (PhotonNetwork.room != null && PhotonNetwork.room.PlayerCount == 2)
             {
                 Debug.Log("OnJoinedRoom: Player Count == 2");
                 SetState(State.CountDown);
@@ -160,7 +167,7 @@ public class GameCore : PunBehaviour
 
     public override void OnJoinedRoom()
     {
-        if (PhotonNetwork.room.PlayerCount == 1)
+        if (PhotonNetwork.room.PlayerCount == 2)
         {
             Debug.Log("OnJoinedRoom: Player Count == 2");
             SetState(State.CountDown);
@@ -175,7 +182,7 @@ public class GameCore : PunBehaviour
     {
         Debug.Log("Other player arrived");
 
-        if (PhotonNetwork.room.PlayerCount == 1)
+        if (PhotonNetwork.room.PlayerCount == 2)
         {
             Debug.Log("OnPhotonPlayerConnected: Player Count == 2");
             SetState(State.CountDown);
@@ -201,7 +208,8 @@ public class GameCore : PunBehaviour
     [PunRPC]
     public void SetPlayerPosition()
     {
-        if(PhotonNetwork.isMasterClient)
+      
+        if (PhotonNetwork.isMasterClient)
         {
             Player.instance.MoveTo(playerPos[0].position, playerPos[0].rotation);
         }

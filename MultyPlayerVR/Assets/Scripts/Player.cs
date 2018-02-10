@@ -44,7 +44,17 @@ public class Player : MonoBehaviour {
     {
         instance = this;
     }
-  
+
+    public GameObject getVisualRightHand()
+    {
+        if(visualPlayer)
+        {
+            NetworkPlayer netPlayer = visualPlayer.GetComponent<NetworkPlayer>();
+            return netPlayer.visualHandTransform.gameObject;
+        }
+        return null;
+    }
+
     public PlayerState currentState;
 
 	// Use this for initialization

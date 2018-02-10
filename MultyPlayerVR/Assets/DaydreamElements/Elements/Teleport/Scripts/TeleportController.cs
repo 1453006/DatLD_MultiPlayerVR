@@ -286,7 +286,7 @@ namespace DaydreamElements.Teleport
             selectionIsActive = false;
            
             //reset player state
-
+            if(Player.instance.currentState != Player.PlayerState.PlayingGame)
             Player.instance.SetState(Player.PlayerState.None);
         }
 

@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 54734882188085232}
   m_Layer: 2
   m_Name: Ball
-  m_TagString: Untagged
+  m_TagString: InGameObject
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1709,6 +1709,8 @@ MonoBehaviour:
   extentGO: {fileID: 0}
   speed: 0
   type: 1
+  SentPickup: 0
+  PickupIsMine: 0
 --- !u!114 &114417114445236156
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1758,6 +1760,7 @@ MonoBehaviour:
   - {fileID: 4542806355512356}
   currentState: 0
   currentGame: 0
+  listInGameObj: []
   countDownDelay: 1
   startTime: 0
   countDown: {fileID: 114538410402365318}
@@ -1843,6 +1846,8 @@ MonoBehaviour:
   extentGO: {fileID: 0}
   speed: 2
   type: 1
+  SentPickup: 0
+  PickupIsMine: 0
 --- !u!114 &114792549573328734
 MonoBehaviour:
   m_ObjectHideFlags: 1

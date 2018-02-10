@@ -7,6 +7,16 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
 {
 
     public static MathGame instance;
+    public GameObject balloon;
+    public GameObject gun ;
+    public Transform spawnArea;
+    private BoxCollider boxSpawnArea;
+
+    #region CONSTANT
+    private const float MIN_DIST_BETWEEN_BALLOONS = 3.0f;
+    #endregion
+
+    private List<GameObject> listObjInGame;
     public enum Operator {
         ADD = 0,
         SUBSTRACT,
@@ -43,6 +53,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
     private void Awake()
     {
         instance = this;
+       
     }
 
     // Use this for initialization
@@ -50,6 +61,8 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         this.turnManager = this.gameObject.AddComponent<PunTurnManager>();
         this.turnManager.TurnManagerListener = this;
         this.turnManager.TurnDuration = 5f;
+        listObjInGame = new List<GameObject>();
+        boxSpawnArea = spawnArea.GetComponent<BoxCollider>();
     }
 	
 	// Update is called once per frame
@@ -99,6 +112,10 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
     public override void OnStartGame()
     {
         base.OnStartGame();
+        //spawn gun
+        int parentId =  Player.instance.visualPlayer.GetPhotonView().viewID;
+        photonView.RPC("SpawnObjOverNetwork", PhotonTargets.AllViaServer, gun.name, parentId);
+
         if (this.turnManager.Turn == 0)
         {
             // when the room has two players, start the first turn (later on, joining players won't trigger a turn)
@@ -108,6 +125,22 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         }
 
     }
+
+    #region RPC
+    [PunRPC]
+    public void SpawnObjOverNetwork(string objName,int parentViewId)
+    {
+       PhotonView view = PhotonView.Find(parentViewId);
+        if (view)
+        {
+            GameObject gunObj = PhotonNetwork.Instantiate(objName, Vector3.zero, Quaternion.identity, 0);
+            Transform rightHand = view.gameObject.transform.findChildRecursively("Hand_Right_jnt");
+            gunObj.transform.SetParent(rightHand);
+            gunObj.transform.localPosition = Vector3.zero;
+            gunObj.transform.localRotation = Quaternion.identity;
+        }
+    }
+    #endregion
 
     #region TurnManager Callbacks
 
@@ -193,6 +226,11 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         this.turnManager.SendMove((byte)answer, true);
     }
 
+    public bool isSentMove()
+    {
+       return  this.turnManager.IsFinishedByMe;
+    }
+
     public void OnEndTurn()
     {
         this.StartCoroutine("ShowResultsBeginNextTurnCoroutine");
@@ -257,41 +295,43 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
 
         }
 
-        if (PhotonNetwork.isMasterClient)
-        {
-            masterQuest.text = this.numberA + " " + displayeOp + " " + this.numberB + "= ";
-            int correctAnswerPos = Mathf.RoundToInt(Random.Range(0, 2));
-            correctNumber = CalcExpression(this.numberA, this.numberB, this.op);
-            masterAnswer[correctAnswerPos].text = correctNumber.ToString();
+        masterQuest.text = this.numberA + " " + displayeOp + " " + this.numberB + "= ";
 
-            for (int i = 0; i < masterAnswer.Length; i++)
-            {
-                if (i == correctAnswerPos)
-                    continue;
-                else
-                {
-                    masterAnswer[i].text = CalcExpression(correctNumber, Random.RandomRange(10, 20), (Operator)Mathf.RoundToInt(Random.Range(0, 2))).ToString();
-                }
-            }
-        }
-        else
-        {
-            //is remote
-            remoteQuest.text = this.numberA + " " + displayeOp + " " + this.numberB + "= ";
-            int correctAnswerPos = Mathf.RoundToInt(Random.Range(0, 2));
-            correctNumber = CalcExpression(this.numberA, this.numberB, this.op);
-            remoteAnswer[correctAnswerPos].text = correctNumber.ToString();
+        //if (PhotonNetwork.isMasterClient)
+        //{
+        //    masterQuest.text = this.numberA + " " + displayeOp + " " + this.numberB + "= ";
+        //    int correctAnswerPos = Mathf.RoundToInt(Random.Range(0, 2));
+        //    correctNumber = CalcExpression(this.numberA, this.numberB, this.op);
+        //    masterAnswer[correctAnswerPos].text = correctNumber.ToString();
 
-            for (int i = 0; i < remoteAnswer.Length; i++)
-            {
-                if (i == correctAnswerPos)
-                    continue;
-                else
-                {
-                    remoteAnswer[i].text = CalcExpression(correctNumber, Random.RandomRange(10, 20), (Operator)Mathf.RoundToInt(Random.Range(0, 2))).ToString();
-                }
-            }
-        }
+        //    for (int i = 0; i < masterAnswer.Length; i++)
+        //    {
+        //        if (i == correctAnswerPos)
+        //            continue;
+        //        else
+        //        {
+        //            masterAnswer[i].text = CalcExpression(correctNumber, Random.RandomRange(10, 20), (Operator)Mathf.RoundToInt(Random.Range(0, 2))).ToString();
+        //        }
+        //    }
+        //}
+        //else
+        //{
+        //    //is remote
+        //    remoteQuest.text = this.numberA + " " + displayeOp + " " + this.numberB + "= ";
+        //    int correctAnswerPos = Mathf.RoundToInt(Random.Range(0, 2));
+        //    correctNumber = CalcExpression(this.numberA, this.numberB, this.op);
+        //    remoteAnswer[correctAnswerPos].text = correctNumber.ToString();
+
+        //    for (int i = 0; i < remoteAnswer.Length; i++)
+        //    {
+        //        if (i == correctAnswerPos)
+        //            continue;
+        //        else
+        //        {
+        //            remoteAnswer[i].text = CalcExpression(correctNumber, Random.RandomRange(10, 20), (Operator)Mathf.RoundToInt(Random.Range(0, 2))).ToString();
+        //        }
+        //    }
+        //}
 
     }
         
@@ -301,8 +341,79 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         this.numberA = numberA;
         this.numberB = numberB;
         this.op = op;
+        if (PhotonNetwork.isMasterClient)
+        {
+            correctNumber = CalcExpression(numberA, numberB, op);
+            //delete previous turn object
+            foreach (GameObject go in listObjInGame)
+                PhotonNetwork.Destroy(go);
+            listObjInGame.Clear();
 
-        UpdateGameUI();
+            //add new one
+            int numSpawn = Random.Range(6,10);
+            int[] correctAnswerPos = new int[2];
+            for (int i = 0; i < correctAnswerPos.Length; i++)
+            {
+                correctAnswerPos[i] = Random.Range(0,numSpawn);
+                //check with previous pos
+                if (i > 0)
+                {
+                    while (correctAnswerPos[i] == correctAnswerPos[i - 1])
+                    {
+                        correctAnswerPos[i] = Random.Range(0, numSpawn);
+                    }
+                }
+            }
+
+            for (int i = 0; i < numSpawn; i++)
+            {
+                GameObject obj = null;
+                if (i == correctAnswerPos[0] || i == correctAnswerPos[1])
+                {
+                    obj = SpawnQuest(correctNumber);
+                }
+                else
+                {
+                    int wrongNumber = CalcExpression(correctNumber, Random.RandomRange(10, 20), (Operator)Mathf.RoundToInt(Random.Range(0, 2)));
+                    obj = SpawnQuest(wrongNumber);
+                }
+                listObjInGame.Add(obj);
+            }
+           
+        }
+            UpdateGameUI();
+    }
+
+    bool isTooClose(Vector3 pos)
+    {
+        foreach (var item in listObjInGame)
+        {
+            if (Vector3.Distance(item.transform.position, pos) < MIN_DIST_BETWEEN_BALLOONS)
+                return true;
+        }
+        return false;
+    }
+
+    GameObject SpawnQuest(int correctNum)
+    {
+        Vector3 rndPosWithin;
+        do
+        {
+            if (boxSpawnArea)
+            {
+                Vector3 sz = boxSpawnArea.size;
+                rndPosWithin = new Vector3(Random.Range(-sz.x, sz.x), Random.Range(-sz.y, sz.y), Random.Range(-sz.z, sz.z));
+            }
+            else
+                rndPosWithin = new Vector3(Random.Range(-6f, 6f), Random.Range(-3f, 3f), Random.Range(-5f, 5f));
+            rndPosWithin = spawnArea.TransformPoint(rndPosWithin *.5f );
+        }
+        while (isTooClose(rndPosWithin));
+
+        GameObject obj = PhotonNetwork.Instantiate(balloon.name, rndPosWithin, Quaternion.identity, 0);
+        TextMesh txt = obj.GetComponentInChildren<TextMesh>();
+        txt.text = correctNum.ToString();
+        return obj;
     }
 
     int CalcExpression(int a, int b,Operator op)
