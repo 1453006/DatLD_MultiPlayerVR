@@ -16,7 +16,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
     private const float MIN_DIST_BETWEEN_BALLOONS = 3.0f;
     #endregion
 
-    private List<GameObject> listObjInGame;
+    private List<GameObject> listAnswer;
     public enum Operator {
         ADD = 0,
         SUBSTRACT,
@@ -60,8 +60,8 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
     void Start () {
         this.turnManager = this.gameObject.AddComponent<PunTurnManager>();
         this.turnManager.TurnManagerListener = this;
-        this.turnManager.TurnDuration = 5f;
-        listObjInGame = new List<GameObject>();
+        this.turnManager.TurnDuration = 10f;
+        listAnswer = new List<GameObject>();
         boxSpawnArea = spawnArea.GetComponent<BoxCollider>();
     }
 	
@@ -115,7 +115,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         //spawn gun
         int parentId =  Player.instance.visualPlayer.GetPhotonView().viewID;
         photonView.RPC("SpawnObjOverNetwork", PhotonTargets.AllViaServer, gun.name, parentId);
-
+      
         if (this.turnManager.Turn == 0)
         {
             // when the room has two players, start the first turn (later on, joining players won't trigger a turn)
@@ -134,6 +134,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         if (view)
         {
             GameObject gunObj = PhotonNetwork.Instantiate(objName, Vector3.zero, Quaternion.identity, 0);
+            base.listInGameObj.Add(gunObj);
             Transform rightHand = view.gameObject.transform.findChildRecursively("Hand_Right_jnt");
             gunObj.transform.SetParent(rightHand);
             gunObj.transform.localPosition = Vector3.zero;
@@ -278,6 +279,14 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         this.op = (Operator)Mathf.RoundToInt(Random.Range(0, 2));
     }
 
+    public override void OnDisableGame()
+    {
+        base.OnDisableGame();
+        foreach (GameObject go in listAnswer)
+            PhotonNetwork.Destroy(go);
+
+    }
+
     void UpdateGameUI()
     {
         char displayeOp = new char();
@@ -345,9 +354,9 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         {
             correctNumber = CalcExpression(numberA, numberB, op);
             //delete previous turn object
-            foreach (GameObject go in listObjInGame)
+            foreach (GameObject go in listAnswer)
                 PhotonNetwork.Destroy(go);
-            listObjInGame.Clear();
+            listAnswer.Clear();
 
             //add new one
             int numSpawn = Random.Range(6,10);
@@ -377,7 +386,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
                     int wrongNumber = CalcExpression(correctNumber, Random.RandomRange(10, 20), (Operator)Mathf.RoundToInt(Random.Range(0, 2)));
                     obj = SpawnQuest(wrongNumber);
                 }
-                listObjInGame.Add(obj);
+                listAnswer.Add(obj);
             }
            
         }
@@ -386,7 +395,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
 
     bool isTooClose(Vector3 pos)
     {
-        foreach (var item in listObjInGame)
+        foreach (var item in listAnswer)
         {
             if (Vector3.Distance(item.transform.position, pos) < MIN_DIST_BETWEEN_BALLOONS)
                 return true;
@@ -410,7 +419,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         }
         while (isTooClose(rndPosWithin));
 
-        GameObject obj = PhotonNetwork.Instantiate(balloon.name, rndPosWithin, Quaternion.identity, 0);
+        GameObject obj = PhotonNetwork.Instantiate(balloon.name, rndPosWithin, boxSpawnArea.transform.rotation, 0);
         TextMesh txt = obj.GetComponentInChildren<TextMesh>();
         txt.text = correctNum.ToString();
         return obj;

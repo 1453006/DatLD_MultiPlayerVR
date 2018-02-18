@@ -24,6 +24,8 @@ public class GameCore : PunBehaviour
     public float countDownDelay = 1f;
     public double startTime = 0;
 
+    bool isCalledRestart = false;
+
     #region UI
     public Text countDown;
     public Text Result;
@@ -48,7 +50,7 @@ public class GameCore : PunBehaviour
         CountDown,
         Start,
         Playing,
-        End
+       
     };
 
     // Use this for initialization
@@ -81,7 +83,7 @@ public class GameCore : PunBehaviour
         txtScore_remote.text = score_remote.ToString();
     }
 
-    public void OnDisableGame()
+    public virtual void OnDisableGame()
     {
         // GameObject[] listGO = GameObject.FindGameObjectsWithTag("InGameObject");
         if (listInGameObj != null && listInGameObj.Count > 0)
@@ -107,7 +109,8 @@ public class GameCore : PunBehaviour
                 }
 	            case State.CountDown:{
 	                   //Player.instance.ShowPlayerMsgViaPhoton("Starting game...",1f);
-	                    Invoke("StartCountDown",countDownDelay);
+                      
+                    Invoke("StartCountDown",countDownDelay);
 	                    break;
                 }
             case State.Start:
@@ -119,6 +122,7 @@ public class GameCore : PunBehaviour
                 {
                     break;
                 }
+          
         }
         currentState = state;
     }
@@ -134,7 +138,7 @@ public class GameCore : PunBehaviour
             }
             else
             {
-                Debug.Log("Waiting for another player");
+
             }
         }
     }
@@ -142,10 +146,12 @@ public class GameCore : PunBehaviour
 
     public virtual void OnStartGame()
     {
-      
+        //score_master = score_remote = 0;
 
-       
+
     }
+
+  
 
 
     public virtual void OnCountDown()
@@ -242,7 +248,15 @@ public class GameCore : PunBehaviour
 
     }
 
-#endregion
+    [PunRPC]
+    public void OnRestartGame(double timestamp)
+    {
+        startTime = timestamp;
+        countDownDelay = 0f;
+        SetState(State.CountDown);
+   
+    }
+    #endregion
 
 }
 

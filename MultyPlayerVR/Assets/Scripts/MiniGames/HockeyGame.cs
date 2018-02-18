@@ -9,8 +9,11 @@ public class HockeyGame : GameCore {
     public static HockeyGame instance;
     public List<GameObject> listStriker;
     short countDownDuration = 5;
+    public Transform initBallTransform;
 
-#region Objects In Game
+
+
+    #region Objects In Game
     public GameObject strikerPrefab;
     public GameObject ball;
     public BoxCollider[] validArea;
@@ -38,6 +41,7 @@ public class HockeyGame : GameCore {
         base.OnUpdateGUI();
         if (currentState == State.CountDown && base.startTime != 0)
         {
+            countDown.gameObject.SetActive(true);
             double timetick = PhotonNetwork.time - base.startTime;
             displayTime = Mathf.RoundToInt((float)(countDownDuration - timetick));
             countDown.text = displayTime.ToString();
@@ -68,7 +72,7 @@ public class HockeyGame : GameCore {
             validArea[0].gameObject.SetActive(false);
         }
 
-        GameObject striker = PhotonNetwork.Instantiate(strikerPrefab.name, pos, Quaternion.identity, 0);
+        GameObject striker = PhotonNetwork.Instantiate(strikerPrefab.name, pos, Player.instance.visualPlayer.transform.rotation , 0);
         if(base.listInGameObj == null)
             base.listInGameObj = new List<GameObject>();
         base.listInGameObj.Add(striker);

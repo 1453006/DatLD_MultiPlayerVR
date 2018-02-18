@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEnterHandler,IPointerExitHandler{
     public string extentData;
     public GameObject extentGO;
+    public Transform extentTransform;
 
     Rigidbody rigidBody;
     ObjectInGame instance;
@@ -34,11 +35,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         Striker,
         Ball,
         MathButton,
-        MathBallon,
         SwitchGameBtn,
         WEAPON_MELEE,
         MathGun,
-        MathBullet
+        MathBullet,
+        MathBallon
         
     };
 
@@ -78,6 +79,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
         currentSpeed = speed;
         initScaleY = this.transform.localScale.y;
+
+        if(type == TYPE.Ball)
+        {
+            lastPos = transform.position;
+        }
 
     }
 
@@ -191,7 +197,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     if (PhotonNetwork.isMasterClient && MiniGameManager.instance.currentGamePrefab == null)
                     {
 
-                        MiniGameManager.instance.currentGamePrefab = PhotonNetwork.Instantiate(extentGO.name, extentGO.transform.position, Quaternion.identity, 0);
+                        MiniGameManager.instance.currentGamePrefab = PhotonNetwork.Instantiate(extentGO.name, extentTransform.position, extentTransform.rotation, 0);
                       
                     }
 
@@ -410,63 +416,166 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     #region Ball
     Tweener tweenDoMove = null;
-   
+
+    void OnBallRestart()
+    {
+        transform.DOKill();
+        transform.gameObject.SetActive(false);
+        transform.position = HockeyGame.instance.initBallTransform.position;
+        transform.rotation = HockeyGame.instance.initBallTransform.rotation;
+        //if (PhotonNetwork.isMasterClient)
+            HockeyGame.instance.photonView.RPC("OnRestartGame", PhotonTargets.AllViaServer, PhotonNetwork.time);
+    }
+
     void OnTriggerEnterBall(Collider other)
     {
         //check area
         if (other.gameObject == HockeyGame.instance.validArea[0].gameObject ||
-            other.gameObject == HockeyGame.instance.validArea[1].gameObject)
+            other.gameObject == HockeyGame.instance.validArea[1].gameObject ||
+            other.gameObject.name.Contains("Ground"))
             return;
         //check is goal
         if (other.gameObject == HockeyGame.instance.goals[0].gameObject)
         {
             HockeyGame.instance.photonView.RPC("AddScore2Players", PhotonTargets.AllViaServer, 1, 1);
+            OnBallRestart();
             return;
         }
         else if (other.gameObject == HockeyGame.instance.goals[1].gameObject)
         {
             HockeyGame.instance.photonView.RPC("AddScore2Players", PhotonTargets.AllViaServer, 1, 0);
+            OnBallRestart();
             return;
         }
 
-        Vector3 contact = other.gameObject.GetComponent<Collider>().ClosestPointOnBounds(transform.position).normalized;
-        direct = Vector3.Reflect(transform.position, contact);
-        direct.y = 0;
+        Ray ray = new Ray();
+        // ObjectInGame objClass = other.GetComponent<ObjectInGame>();
+        // if (objClass)
+        // {
+        //     if (objClass.instance.type == TYPE.Striker)
+        //     {
+        //        
 
+        //     }
 
+        // }
+        // else
+        // {
+        //     currentSpeed *= 0.9f;
 
-        ObjectInGame objClass = other.GetComponent<ObjectInGame>();
-        if (objClass)
+        // }
+        //check is striker
+      
+
+        float timeToEnd = 0f;
+        Vector3 targetPos = Vector3.zero;
+        Vector3 lastPosition;
+
+        //  RaycastHit hit;
+
+        //if (Physics.Raycast(transform.position, transform.TransformDirection(direct), out hit))
+        //{
+        //    Debug.Log("is raycast");
+        //    Debug.DrawLine(transform.position, hit.point);
+        //    float dist = Vector3.Distance(transform.position, hit.point);
+        //    Debug.Log(" time is :" + speed / dist);
+        //    timeToEnd = dist / currentSpeed;
+        //    targetPos = hit.point;
+        //    transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, Random.Range(15, 30), transform.rotation.eulerAngles.z);
+        //    tweenDoMove = transform.DOMove(hit.point, timeToEnd).SetEase(Ease.Linear);
+        //}
+        Vector3 contact = other.gameObject.GetComponent<Collider>().ClosestPointOnBounds(transform.position);
+
+        if (other.gameObject.name.Contains("Striker"))
         {
-            if (objClass.instance.type == TYPE.Striker)
-                currentSpeed =  (currentSpeed >= 2*speed) ? 2*speed : currentSpeed *= 1.7f;
+            currentSpeed = (currentSpeed >= 2 * speed) ? 2 * speed : currentSpeed *= 1.7f;
+            if (other.GetComponent<PhotonView>().isMine)
+            {
+                direct = /*other.transform.forward;*/(contact - other.transform.position).normalized;
+                direct.y = 0;
+                direct.z = Mathf.Abs(direct.z);
+                ray = new Ray(contact, direct);
+               
+                RaycastHit hit;
+                if (Physics.Raycast(ray.origin, ray.direction, out hit, 100))
+                {
+                    Debug.Log("is raycast");
+                    Debug.DrawLine(transform.position, hit.point);
+                    float dist = Vector3.Distance(transform.position, hit.point);
+                    //Debug.Log(" time is :" + speed / dist);
+                    timeToEnd = dist / currentSpeed;
+                    targetPos = hit.point;
+                    transform.LookAt(targetPos);
+                    tweenDoMove = transform.DOMove(hit.point, timeToEnd).SetEase(Ease.Linear);
+                }
+
+                photonView.RPC("AddForceOverNetwork", PhotonTargets.AllViaServer
+                   , targetPos, timeToEnd, PhotonNetwork.ServerTimestamp);
+
+            }
         }
         else
         {
             currentSpeed *= 0.9f;
-            
-        }
+            //direct = Vector3.Reflect(transform.position, contact.normalized); 
+            direct = Vector3.Reflect(transform.forward, -other.transform.right.normalized);
+            direct.y = 0;
+            ray = new Ray(contact, direct);
+            Debug.Log("EDGE HIT IS" + ray.origin + "-"+ ray.direction);
+            //if(ray.direction.z == 1 || ray.direction.z == -1 || ray.direction.z == 0)
+            //{
+            //    float z = ray.direction.z;
+            //   ray.direction = new Vector3(ray.direction.x, ray.direction.y,z > 0 ? 0.4f:-0.4f);
+            //}
+            transform.LookAt(ray.direction*100f );
+            Debug.Log("EDGE ROT IS" + transform.rotation.eulerAngles);
+            RaycastHit hit;
+            if (Physics.Raycast(ray.origin, ray.direction, out hit, 100))
+            {
+                Debug.Log("is raycast");
+                Debug.DrawLine(transform.position, hit.point);
+                float dist = Vector3.Distance(transform.position, hit.point);
+                //Debug.Log(" time is :" + speed / dist);
+                timeToEnd = dist / currentSpeed;
+                targetPos = hit.point;
+                transform.LookAt(targetPos);
+                tweenDoMove = transform.DOMove(hit.point, timeToEnd).SetEase(Ease.Linear);
+            }
+            //if (PhotonNetwork.isMasterClient)
+            //    photonView.RPC("AddForceOverNetwork", PhotonTargets.AllViaServer
+            //        , targetPos, timeToEnd, PhotonNetwork.ServerTimestamp);
 
-        float timeToEnd = 0f;
-        Vector3 targetPos = Vector3.zero;
        
-        RaycastHit hit;
-
-        if (Physics.Raycast(transform.position, transform.TransformDirection(direct), out hit))
-        {
-            Debug.Log("is raycast");
-            Debug.DrawLine(transform.position, hit.point);
-            float dist = Vector3.Distance(transform.position, hit.point);
-            //Debug.Log(" time is :" + speed / dist);
-            timeToEnd = dist / currentSpeed;
-            targetPos = hit.point;
-          //  transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, Random.Range(15, 30), transform.rotation.eulerAngles.z);
-            tweenDoMove = transform.DOMove(hit.point, timeToEnd).SetEase(Ease.Linear);
         }
 
-        if (PhotonNetwork.isMasterClient)
-            photonView.RPC("AddForceOverNetwork", PhotonTargets.AllViaServer
-                , targetPos, timeToEnd, PhotonNetwork.ServerTimestamp);
+        //RaycastHit hit;
+
+        //if (Physics.Raycast(ray.origin, ray.direction, out hit, 100))//cast the ray 100 units at the specified direction  
+        //{
+        //    //the reflection direction is the reflection of the current ray direction flipped at the hit normal  
+        //    Vector3 inDirection = Vector3.Reflect(ray.direction, hit.normal);
+        //    //cast the reflected ray, using the hit point as the origin and the reflected direction as the direction  
+        //    ray = new Ray(hit.point, inDirection);
+
+        //    //Draw the normal - can only be seen at the Scene tab, for debugging purposes  
+        //    Debug.DrawRay(hit.point, hit.normal * 3, Color.blue);
+        //    //represent the ray using a line that can only be viewed at the scene tab  
+        //    Debug.DrawRay(hit.point, inDirection * 100, Color.magenta);
+
+        //    transform.localRotation = Quaternion.Euler(inDirection);
+        //    if (Physics.Raycast(ray.origin, ray.direction, out hit, 100))//cast the ray 100 units at the specified direction  
+        //    {
+        //        Debug.Log("is raycast");
+        //        Debug.DrawLine(transform.position, hit.point);
+        //        float dist = Vector3.Distance(transform.position, hit.point);
+        //        //Debug.Log(" time is :" + speed / dist);
+        //        timeToEnd = dist / currentSpeed;
+        //        targetPos = hit.point;
+        //        //  transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, Random.Range(15, 30), transform.rotation.eulerAngles.z);
+        //        tweenDoMove = transform.DOMove(hit.point, timeToEnd).SetEase(Ease.Linear);
+        //    }
+        //}
+
     }
 
     float time = 0f;
@@ -474,14 +583,25 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     {
         //transform.Translate(direct * speed * Time.smoothDeltaTime);
         //time += Time.smoothDeltaTime;
-        //if (time >= 0.2999f)
+        //if (time >= 5f)
         //{
         //    time = 0;
-        //    Debug.Log("my position is +" + transform.position);
+        //    lastPos = transform.position;
+        //    if (Vector3.Distance(transform.position, lastPos) <= 0.1f)
+        //    {
+        //        if (PhotonNetwork.isMasterClient)
+        //            photonView.RPC("RestartMiniGame", PhotonTargets.AllViaServer);
+        //    }
         //}
 
-
     }
+
+    [PunRPC]
+    public void RestartMiniGame()
+    {
+        HockeyGame.instance.SetState(GameCore.State.CountDown);
+    }
+
 
     [PunRPC]
     public void AddForceOverNetwork(Vector3 targetPos,float timeToEnd, int timestamp)
@@ -498,16 +618,17 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         //delay <= timeToEnd
         if (delay <= timeToEnd)
         {
-           
-            tweenDoMove = transform.DOMove(targetPos, timeToEnd - delay).SetEase(Ease.Linear);
+            transform.LookAt(targetPos);
+            //tweenDoMove = transform.DOMove(targetPos, timeToEnd - delay).SetEase(Ease.Linear);
+            tweenDoMove.ChangeValues(transform.position, targetPos, timeToEnd - delay);
         }
         else
         {
-            //tweenDoMove = null;
-            //transform.DOKill();
+            
+            transform.LookAt(targetPos);
             //transform.position = targetPos;
-           
-            transform.position = targetPos;
+            //tweenDoMove.Complete();
+            return;
         }
 
     }
