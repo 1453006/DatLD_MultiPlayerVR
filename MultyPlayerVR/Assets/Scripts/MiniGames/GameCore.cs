@@ -131,7 +131,7 @@ public class GameCore : PunBehaviour
     {
         if (currentState == State.None)
         {
-            if (PhotonNetwork.room != null && PhotonNetwork.room.PlayerCount == 2)
+            if (PhotonNetwork.room != null && PhotonNetwork.room.PlayerCount == 1)
             {
                 Debug.Log("OnJoinedRoom: Player Count == 2");
                 SetState(State.CountDown);

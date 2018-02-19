@@ -73,4 +73,6 @@ MonoBehaviour:
   - DestroyObject
   - UpdateChildHP
   - SpawnObjOverNetwork
+  - RestartMiniGame
+  - OnRestartGame
   DisableAutoOpenWizard: 1

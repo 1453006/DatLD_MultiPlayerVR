@@ -87,11 +87,18 @@ public class ObjectPoolItem
 
 public class FBPoolManager : MonoBehaviour
 {
+    public enum POOLTYPE
+    {
+        DEFAULT,
+        UI
+    }
+
 	public static FBPoolManager instance;
 	public List<ObjectPoolItem> itemsToPool;
-	Dictionary<string, ObjectPoolItem> dicItemsToPool = new Dictionary<string, ObjectPoolItem>();
-
-	void Awake()
+    public List<ObjectPoolItem> uiToPool;
+    Dictionary<string, ObjectPoolItem> dicItemsToPool = new Dictionary<string, ObjectPoolItem>();
+    Dictionary<string, ObjectPoolItem> dicUIToPool = new Dictionary<string, ObjectPoolItem>();
+    void Awake()
 	{
 		instance = this;
 
@@ -100,28 +107,56 @@ public class FBPoolManager : MonoBehaviour
 			item.init();
 			dicItemsToPool.Add(item.name, item);
 		}
-	}
+
+        foreach (ObjectPoolItem item in uiToPool)
+        {
+            item.init();
+            dicUIToPool.Add(item.name, item);
+        }
+
+    }
 
 	/// <summary>
 	/// gets a pooled object with specified name
 	/// </summary>
 	/// <returns>pooled object</returns>
 	/// <param name="name">name</param>
-	public GameObject getPoolObject(string name)
+	public GameObject getPoolObject(string name, POOLTYPE type = POOLTYPE.DEFAULT)
 	{
-		return dicItemsToPool[name].getPoolObject();
-	}
+        switch (type)
+        {
+            case POOLTYPE.DEFAULT:
+                return dicItemsToPool[name].getPoolObject();
+               
+            case POOLTYPE.UI:
+                return dicUIToPool[name].getPoolObject();
+              
+            default:
+                break;
+        }
+
+        return null;
+
+    }
 
 	/// <summary>
 	/// returns an object to pool
 	/// </summary>
 	/// <param name="obj">object to return</param>
 	/// <returns>true if obj belongs to the pool, false otherwise</returns>
-	public bool returnObjectToPool(GameObject obj)
+	public bool returnObjectToPool(GameObject obj, POOLTYPE type = POOLTYPE.DEFAULT)
 	{
 		ObjectPoolItem objectPoolItem;
-		if (dicItemsToPool.TryGetValue(obj.name, out objectPoolItem))
-			return objectPoolItem.returnObjectToPool(obj);
+        if (type == POOLTYPE.DEFAULT)
+        {
+            if (dicItemsToPool.TryGetValue(obj.name, out objectPoolItem))
+                return objectPoolItem.returnObjectToPool(obj);
+        }
+        else if (type == POOLTYPE.UI)
+        {
+            if (dicUIToPool.TryGetValue(obj.name, out objectPoolItem))
+                return objectPoolItem.returnObjectToPool(obj);
+        }
 		return false;
 	}
 

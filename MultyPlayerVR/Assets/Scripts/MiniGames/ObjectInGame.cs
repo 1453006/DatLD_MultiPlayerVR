@@ -423,7 +423,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         transform.gameObject.SetActive(false);
         transform.position = HockeyGame.instance.initBallTransform.position;
         transform.rotation = HockeyGame.instance.initBallTransform.rotation;
-        //if (PhotonNetwork.isMasterClient)
+        if (PhotonNetwork.isMasterClient)
             HockeyGame.instance.photonView.RPC("OnRestartGame", PhotonTargets.AllViaServer, PhotonNetwork.time);
     }
 
@@ -438,13 +438,13 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         if (other.gameObject == HockeyGame.instance.goals[0].gameObject)
         {
             HockeyGame.instance.photonView.RPC("AddScore2Players", PhotonTargets.AllViaServer, 1, 1);
-            OnBallRestart();
+            //OnBallRestart();
             return;
         }
         else if (other.gameObject == HockeyGame.instance.goals[1].gameObject)
         {
             HockeyGame.instance.photonView.RPC("AddScore2Players", PhotonTargets.AllViaServer, 1, 0);
-            OnBallRestart();
+            //OnBallRestart();
             return;
         }
 
@@ -491,7 +491,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             currentSpeed = (currentSpeed >= 2 * speed) ? 2 * speed : currentSpeed *= 1.7f;
             if (other.GetComponent<PhotonView>().isMine)
             {
-                direct = /*other.transform.forward;*/(contact - other.transform.position).normalized;
+               // direct = /*other.transform.forward;*/(contact - other.transform.position).normalized;
+                direct = contact - other.transform.position;
                 direct.y = 0;
                 direct.z = Mathf.Abs(direct.z);
                 ray = new Ray(contact, direct);
@@ -506,19 +507,23 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     timeToEnd = dist / currentSpeed;
                     targetPos = hit.point;
                     transform.LookAt(targetPos);
+                    transform.DOKill();
                     tweenDoMove = transform.DOMove(hit.point, timeToEnd).SetEase(Ease.Linear);
+
+                    photonView.RPC("AddForceOverNetwork", PhotonTargets.AllViaServer
+                  , targetPos, timeToEnd, PhotonNetwork.time);
                 }
 
-                photonView.RPC("AddForceOverNetwork", PhotonTargets.AllViaServer
-                   , targetPos, timeToEnd, PhotonNetwork.ServerTimestamp);
+               
 
             }
         }
         else
-        {
+        { 
             currentSpeed *= 0.9f;
             //direct = Vector3.Reflect(transform.position, contact.normalized); 
             direct = Vector3.Reflect(transform.forward, -other.transform.right.normalized);
+           
             direct.y = 0;
             ray = new Ray(contact, direct);
             Debug.Log("EDGE HIT IS" + ray.origin + "-"+ ray.direction);
@@ -527,7 +532,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             //    float z = ray.direction.z;
             //   ray.direction = new Vector3(ray.direction.x, ray.direction.y,z > 0 ? 0.4f:-0.4f);
             //}
-            transform.LookAt(ray.direction*100f );
+            transform.LookAt(ray.direction*200f );
             Debug.Log("EDGE ROT IS" + transform.rotation.eulerAngles);
             RaycastHit hit;
             if (Physics.Raycast(ray.origin, ray.direction, out hit, 100))
@@ -539,13 +544,16 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 timeToEnd = dist / currentSpeed;
                 targetPos = hit.point;
                 transform.LookAt(targetPos);
+                transform.DOKill();
                 tweenDoMove = transform.DOMove(hit.point, timeToEnd).SetEase(Ease.Linear);
-            }
-            //if (PhotonNetwork.isMasterClient)
-            //    photonView.RPC("AddForceOverNetwork", PhotonTargets.AllViaServer
-            //        , targetPos, timeToEnd, PhotonNetwork.ServerTimestamp);
 
-       
+                if (PhotonNetwork.isMasterClient)
+                    photonView.RPC("AddForceOverNetwork", PhotonTargets.AllViaServer
+                 , targetPos, timeToEnd, PhotonNetwork.time);
+            }
+            
+
+
         }
 
         //RaycastHit hit;
@@ -604,9 +612,9 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
 
     [PunRPC]
-    public void AddForceOverNetwork(Vector3 targetPos,float timeToEnd, int timestamp)
+    public void AddForceOverNetwork(Vector3 targetPos,float timeToEnd, double timestamp)
     {
-        float delay = /*1.0f /*/ (PhotonNetwork.ServerTimestamp - timestamp)/1000f;
+        float delay = /*1.0f /*/(float) (PhotonNetwork.time - timestamp)/1000f;
         Debug.Log("AddForceOverNetwork called, delay:" + delay + "-end time"+ timeToEnd);
 
         //if (delay > timeToEnd)
@@ -620,14 +628,18 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         {
             transform.LookAt(targetPos);
             //tweenDoMove = transform.DOMove(targetPos, timeToEnd - delay).SetEase(Ease.Linear);
-            tweenDoMove.ChangeValues(transform.position, targetPos, timeToEnd - delay);
+            //if (tweenDoMove == null)
+            //    tweenDoMove = transform.DOMove(targetPos, timeToEnd - delay).SetEase(Ease.Linear);
+            //else
+                tweenDoMove = transform.DOMove(targetPos, timeToEnd - delay).SetEase(Ease.Linear);
         }
         else
         {
             
             transform.LookAt(targetPos);
+            tweenDoMove.ChangeValues(transform.position, targetPos);
             //transform.position = targetPos;
-            //tweenDoMove.Complete();
+            // tweenDoMove.Complete();
             return;
         }
 
