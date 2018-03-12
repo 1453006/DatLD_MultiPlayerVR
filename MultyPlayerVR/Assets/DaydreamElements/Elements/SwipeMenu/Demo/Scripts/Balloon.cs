@@ -45,6 +45,8 @@ namespace DaydreamElements.SwipeMenu {
 
     public BalloonSpawner spawner;
     public int balloonIx;
+    //datld edited
+    public Transform textMesh;
 
     public GameObject explodedQuad;
     public GameObject popSound;
@@ -102,7 +104,8 @@ namespace DaydreamElements.SwipeMenu {
       float t = startTime - Time.realtimeSinceStartup;
       float w = (2 * Mathf.PI / FLOATING_PERIOD);
       float delta = Mathf.Sin(t * w) * FLOATING_AMPLITUDE;
-      transform.localPosition = startPosition + Vector3.up * delta;
+      textMesh.localPosition =  transform.localPosition = startPosition + Vector3.up * delta;
+      
     }
 
     private void CreateExplosion() {

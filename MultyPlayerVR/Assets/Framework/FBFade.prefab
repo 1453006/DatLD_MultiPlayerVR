@@ -122,7 +122,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   image: {fileID: 114621596203972826}
   canvas: {fileID: 223446129298315202}
-  gvrEventSystem: {fileID: 0}
 --- !u!222 &222429361930198972
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -137,7 +136,7 @@ Canvas:
   m_GameObject: {fileID: 1213781924894164}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
+  m_RenderMode: 1
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
   m_PixelPerfect: 0

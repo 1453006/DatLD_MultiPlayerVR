@@ -24,7 +24,7 @@ public class FBFade : MonoBehaviour
 	private void Awake()
 	{
 		instance = this;
-		canvas.gameObject.SetActive(true);
+		
 		GameObject.DontDestroyOnLoad(this);
 	}
 

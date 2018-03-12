@@ -14,6 +14,7 @@
 
 using UnityEngine;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 namespace DaydreamElements.Teleport {
   /// Teleport detector designed for arc-like raycasting from the controller.
@@ -95,13 +96,14 @@ namespace DaydreamElements.Teleport {
 
       // Selection result defaults to the origin point of the raycast if there is not a hit.
       Vector3 defaultSelectionResult = ray.origin;
-
+            
       if (!active) {
         result.selection = defaultSelectionResult;
         result.selectionIsValid = false;
         return result;
       }
 
+      
       // First, raycast forward from the controller up to max raycast distance.
       if (Physics.Raycast(ray.origin, ray.direction,
                           out hit, maxDistance, raycastMask)) {

@@ -14,7 +14,7 @@
 
 using UnityEngine;
 using DG.Tweening;
-
+using UnityEngine.EventSystems;
 namespace DaydreamElements.Teleport
 {
     /// Allow moving the player in the scene by teleporting.
@@ -219,6 +219,10 @@ namespace DaydreamElements.Teleport
             // float playerHeight = DetectPlayerHeight();
             float playerHeight = Player.instance.playerHeight;
             selectionResult = detector.DetectSelection(currentController, playerHeight);
+
+            if(Player.instance.currentState  != Player.PlayerState.None &&
+                Player.instance.currentState != Player.PlayerState.Teleporting)
+                selectionResult.selectionIsValid = false;
 
             // Update the visualization.
             visualizer.UpdateSelection(currentController, selectionResult);

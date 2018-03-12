@@ -97,6 +97,12 @@ public static class FBUtils
             GameObject.Destroy(components[i] as UnityEngine.Object);
     }
 
+    public static int RandomEnumValue<T>()
+    {
+        return UnityEngine.Random.Range(0, System.Enum.GetValues(typeof(T)).Length);
+    
+    }
+
     #region need review
 
     public static string Url;

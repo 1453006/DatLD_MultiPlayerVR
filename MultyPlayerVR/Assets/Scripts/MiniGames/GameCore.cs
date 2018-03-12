@@ -85,14 +85,13 @@ public class GameCore : PunBehaviour
 
     public virtual void OnDisableGame()
     {
-        // GameObject[] listGO = GameObject.FindGameObjectsWithTag("InGameObject");
+
         if (listInGameObj != null && listInGameObj.Count > 0)
         {
-
             foreach (GameObject go in listInGameObj)
                 PhotonNetwork.Destroy(go);
         }
-
+        this.photonView.RPC("ResetPlayerState", PhotonTargets.Others, Player.PlayerState.None);
     }
     void StartCountDown()
     {
@@ -131,7 +130,7 @@ public class GameCore : PunBehaviour
     {
         if (currentState == State.None)
         {
-            if (PhotonNetwork.room != null && PhotonNetwork.room.PlayerCount == 1)
+            if (PhotonNetwork.room != null && PhotonNetwork.room.PlayerCount == 2)
             {
                 Debug.Log("OnJoinedRoom: Player Count == 2");
                 SetState(State.CountDown);
@@ -214,14 +213,16 @@ public class GameCore : PunBehaviour
     [PunRPC]
     public void SetPlayerPosition()
     {
-      
+      FBFade.instance.fadeIn(2f);
         if (PhotonNetwork.isMasterClient)
         {
-            Player.instance.MoveTo(playerPos[0].position, playerPos[0].rotation);
+            //Player.instance.MoveTo(playerPos[0].position, playerPos[0].rotation);
+            Player.instance.SnapTo(playerPos[0].position, playerPos[0].rotation);
         }
         else
         {
-            Player.instance.MoveTo(playerPos[1].position, playerPos[1].rotation);
+            //Player.instance.MoveTo(playerPos[1].position, playerPos[1].rotation);
+            Player.instance.SnapTo(playerPos[1].position, playerPos[1].rotation);
         }
     }
 
@@ -246,6 +247,17 @@ public class GameCore : PunBehaviour
         }
 
 
+    }
+    [PunRPC]
+    public void ResetPlayerState(Player.PlayerState state)
+    {
+        Player.instance.SetState(state);
+        if (listInGameObj != null && listInGameObj.Count > 0)
+        {
+            foreach (GameObject go in listInGameObj)
+                PhotonNetwork.Destroy(go);
+        }
+        PopupManager.ShowText("Ending game...",3f);
     }
 
     [PunRPC]

@@ -19,7 +19,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4916650600498862}
-  - component: {fileID: 114363026298615568}
   - component: {fileID: 114056717862611706}
   - component: {fileID: 54370827404117532}
   - component: {fileID: 65346545135637518}
@@ -153,31 +152,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   extentData: 
   extentGO: {fileID: 0}
+  extentTransform: {fileID: 0}
   speed: 0
   type: 4
---- !u!114 &114363026298615568
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1200251928979648}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ownerId: 0
-  group: 0
-  OwnerShipWasTransfered: 0
-  prefixBackup: -1
-  synchronization: 3
-  onSerializeTransformOption: 3
-  onSerializeRigidBodyOption: 2
-  ownershipTransfer: 0
-  ObservedComponents:
-  - {fileID: 114056717862611706}
-  ObservedComponentsFoldoutOpen: 1
-  viewIdField: 0
-  instantiationId: -1
-  currentMasterID: -1
-  isRuntimeInstantiated: 0
+  SentPickup: 0
+  PickupIsMine: 0

@@ -149,7 +149,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 #region event system
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if(Player.instance.currentState != Player.PlayerState.PlayingGame)
+        if(Player.instance.currentState != Player.PlayerState.PlayingGame &&
+            Player.instance.isHandAttached == false)
          Player.instance.SetState(Player.PlayerState.Selecting);
     }
     public void OnPointerExit(PointerEventData eventData)
@@ -187,13 +188,19 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 }
             case TYPE.SwitchGameBtn:
                 {
+
+                    //check num of player
+                    if (PhotonNetwork.room.PlayerCount != 2)
+                    {
+                        PopupManager.ShowText("Waiting for another player", 3f);
+                        return;
+                    }
+
                     Player.instance.SetState(Player.PlayerState.PlayingGame);
                     Debug.Log("SwitchGameBtn clicked");
                     Sequence sequence = DOTween.Sequence();
                     sequence.Append(this.transform.DOScaleY(initScaleY * 0.5f, 0.25f).SetEase(Ease.OutSine));
                     sequence.Append(this.transform.DOScaleY(initScaleY, 0.5f).SetEase(Ease.OutBounce));
-
-
                     if (PhotonNetwork.isMasterClient && MiniGameManager.instance.currentGamePrefab == null)
                     {
 
@@ -336,9 +343,17 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         //actions
         if (this.PickupIsMine)
         {
-            photonView.TransferOwnership(PhotonNetwork.player.ID);
+            //photonView.TransferOwnership(PhotonNetwork.player.ID);
+            //Player.instance.SetState(Player.PlayerState.None);
+            //Player.instance.OnAttachItemToHand(this.transform);
+            if (this.gameObject != null)
+            {
+                this.gameObject.SetActive(false);
+            }
+            PhotonView playerPhotonView = Player.instance.visualPlayer.GetPhotonView();
+            Player.instance.isHandAttached = true;
+            playerPhotonView.RPC("SendAttachItemToHand", PhotonTargets.AllViaServer, this.gameObject.name, playerPhotonView.viewID);
             Player.instance.SetState(Player.PlayerState.None);
-            Player.instance.OnAttachItemToHand(this.transform);
         }
     }
 
@@ -663,15 +678,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     void UpdateMelee()
     {
-        if (photonView.isMine)
-        {
-
-        }
-        else
-        {
-            transform.DOMove(correctPos, 0.2f);
-            transform.rotation = Quaternion.Lerp(transform.rotation, correctRot, Time.deltaTime * 10f);
-        }
+       
            
     }
     void OnTriggerEnterAXE(Collider other)

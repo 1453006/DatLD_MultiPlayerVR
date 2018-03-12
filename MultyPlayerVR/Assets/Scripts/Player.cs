@@ -22,14 +22,29 @@ public class Player : MonoBehaviour {
         }
 
     }
+
+    public void SnapTo(Vector3 pos, Quaternion rot)
+    {
+        Vector3 correctPos = new Vector3(pos.x, pos.y + playerHeight, pos.z);
+        this.transform.position = correctPos;
+        this.transform.rotation = rot;
+        if (visualPlayer)
+        {
+            visualPlayer.transform.position = correctPos;
+            visualPlayer.transform.rotation = rot;
+        }
+
+    }
     #endregion
 
     public GameObject defaultLaser;
     public GameObject visualPlayer;
+    public NetworkPlayer networkPlayer;
+   
     public DaydreamElements.Teleport.TeleportController teleportController;
     public static Player instance;
   
-    private bool isHandAttached = false;
+    public bool isHandAttached = false;
     public Transform handItem = null;
     public enum PlayerState
     {
@@ -74,11 +89,12 @@ public class Player : MonoBehaviour {
         }
         if (isHandAttached)
         {
-            if(GvrControllerInput.HomeButtonDown)
+            if (GvrControllerInput.HomeButtonDown)
             {
 
             }
         }
+    
     }
 
     public void SetState(PlayerState state)
@@ -101,13 +117,13 @@ public class Player : MonoBehaviour {
             case PlayerState.Selecting:
                 {
                     defaultLaser.SetActive(true);
-                    teleportController.gameObject.SetActive(false);
+                    //teleportController.gameObject.SetActive(false);
                 }
                 break;
             case PlayerState.PlayingGame:
                 {
                     defaultLaser.SetActive(true);
-                    teleportController.gameObject.SetActive(false);
+                    //teleportController.gameObject.SetActive(false);
 
                 }
                 break;

@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
-using DG.Tweening;
+﻿using DG.Tweening;
+using UnityEngine;
 
 public class NetworkPlayer : Photon.MonoBehaviour {
     GameObject playerGO;
@@ -58,8 +57,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             }
 
             
-
-
+           
         }
 
         //enable voice recorder only if it is mine;
@@ -68,6 +66,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             this.transform.GetComponent<PhotonVoiceRecorder>().enabled = true;
             //save this avatar to player prefab
             Player.instance.visualPlayer = gameObject;
+            Player.instance.networkPlayer = this;
             //if (playerGO)
             //    transform.SetParent(playerGO.transform);
             //transform.localPosition = Vector3.zero;
@@ -78,6 +77,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             //audioSource.clip = Microphone.Start("Built-in Microphone", true, 10, 44100);
             //while (!(Microphone.GetPosition(null) > 0)) { }
             //audioSource.Play();
+          
 
         }
 
@@ -108,14 +108,6 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             visualLowerJaw.transform.DOScaleY(visualLowerJawScaleY + MicInput.instance.MicLoudness / 4f, 0.2f);
             GvrBasePointer laserPointerImpl = (GvrBasePointer)GvrPointerInputModule.Pointer;
 
-            if (GvrControllerInput.TouchDown)
-            {
-                Debug.Log("hitting point:" + GvrPointerInputModule.CurrentRaycastResult.worldPosition);
-                Vector3 endPoint = GvrPointerInputModule.CurrentRaycastResult.worldPosition;
-                endPoint.y = playerGO.transform.position.y;
-                
-                //gameObject.transform.position = new Vector3(laserPointerImpl.PointerIntersection.x, gameObject.transform.position.y, laserPointerImpl.PointerIntersection.z);
-            }
 
             // Lerping smooths the movement
             if (cameraTransform)
@@ -141,7 +133,37 @@ public class NetworkPlayer : Photon.MonoBehaviour {
  
     }
 
- 
-    
-    
+
+    #region RPC
+    [PunRPC]
+    public void SendAttachItemToHand(string itemName, int parentViewId)
+    {
+        itemName = itemName.Replace("(Clone)", "");
+        PhotonView view = PhotonView.Find(parentViewId);
+        if (view)
+        {
+            Debug.Log("itemName: "+ itemName);
+            GameObject go = FBPoolManager.instance.getPoolObject(itemName);
+            if (go == null)
+            {
+                Debug.Log("this bject not in pool !!!!!");
+                return;
+            }
+            Transform rightHand = view.gameObject.transform.findChildRecursively("Hand_Right_jnt");
+            //reset old attached if have
+            foreach (Transform child in rightHand.transform)
+            {
+                FBPoolManager.instance.returnObjectToPool(child.gameObject);
+            }
+
+            go.transform.SetParent(rightHand);
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            go.gameObject.layer = 2; //ig
+            go.SetActive(true);
+        }
+    }
+    #endregion
+
+
 }

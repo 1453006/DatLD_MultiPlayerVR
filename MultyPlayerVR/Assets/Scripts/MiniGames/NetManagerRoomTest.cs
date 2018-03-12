@@ -9,7 +9,7 @@ public class NetManagerRoomTest : MonoBehaviour {
     public GameObject avatarPrefabs;
     public GameObject interactiveObjectPrefabs;
     public const string setting = "1.0";
-
+    
 	// Use this for initialization
 	void Start () {
         PhotonNetwork.ConnectUsingSettings(setting);

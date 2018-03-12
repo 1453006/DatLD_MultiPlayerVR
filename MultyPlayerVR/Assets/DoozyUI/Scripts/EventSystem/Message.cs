@@ -157,6 +157,7 @@ namespace DoozyUI
         {
             if (!handlers.ContainsKey(messageName)) { return; }
 
+            
             Type callerType = null;
             if (Application.isEditor)
             {
