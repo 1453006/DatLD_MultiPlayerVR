@@ -1,11 +1,11 @@
 [
   {
-    "id": 2,
+    "id": 1,
     "name": "GroupGameItems",
     "ignore": false,
     "data": [
       {
-        "fieldName": "id",
+        "fieldName": "itemId",
         "dataType": -3,
         "min": 0,
         "max": 256,
@@ -26,14 +26,14 @@
         "criteria": "[a-zA-Z0-9]"
       },
       {
-        "fieldName": "health",
-        "dataType": -2,
+        "fieldName": "description",
+        "dataType": -1,
         "min": 0,
         "max": 256,
         "criteria": "[a-zA-Z0-9]"
       },
       {
-        "fieldName": "description",
+        "fieldName": "iconName",
         "dataType": -1,
         "min": 0,
         "max": 256,
@@ -54,8 +54,36 @@
         "criteria": "[a-zA-Z0-9]"
       },
       {
-        "fieldName": "iconName",
-        "dataType": -1,
+        "fieldName": "receiveItemId",
+        "dataType": -3,
+        "min": -1,
+        "max": 256,
+        "criteria": "[a-zA-Z0-9]"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "CombineObject",
+    "ignore": false,
+    "data": [
+      {
+        "fieldName": "itemId01",
+        "dataType": -3,
+        "min": 0,
+        "max": 256,
+        "criteria": "[a-zA-Z0-9]"
+      },
+      {
+        "fieldName": "itemId02",
+        "dataType": -3,
+        "min": 0,
+        "max": 256,
+        "criteria": "[a-zA-Z0-9]"
+      },
+      {
+        "fieldName": "itemidFinal",
+        "dataType": -3,
         "min": 0,
         "max": 256,
         "criteria": "[a-zA-Z0-9]"
