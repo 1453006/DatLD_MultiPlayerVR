@@ -15,6 +15,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
     private Vector3 lowerJawInitPos;
     public Transform handItem;
 
+
 #region Voice Regconition
     public AudioSource audioSource;
     public int numSample = 1024;
@@ -38,6 +39,8 @@ public class NetworkPlayer : Photon.MonoBehaviour {
     }
 
     #endregion
+
+  
 
     // Use this for initialization
     void Start () {
@@ -129,8 +132,6 @@ public class NetworkPlayer : Photon.MonoBehaviour {
 
         }
 
-
- 
     }
 
 
@@ -159,8 +160,24 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             go.transform.SetParent(rightHand);
             go.transform.localPosition = Vector3.zero;
             go.transform.localRotation = Quaternion.identity;
-            go.gameObject.layer = 2; //ig
+            go.gameObject.layer = 2; //ignore ray cast
+            Player.instance.currentHandItem = go;
             go.SetActive(true);
+        }
+    }
+
+    [PunRPC]
+    public void SendRemoveHandItem(int parentViewId)
+    {
+        PhotonView view = PhotonView.Find(parentViewId);
+        if (view)
+        {
+            Transform rightHand = view.gameObject.transform.findChildRecursively("Hand_Right_jnt");
+            //reset old attached if have
+            foreach (Transform child in rightHand.transform)
+            {
+                FBPoolManager.instance.returnObjectToPool(child.gameObject);
+            }
         }
     }
     #endregion

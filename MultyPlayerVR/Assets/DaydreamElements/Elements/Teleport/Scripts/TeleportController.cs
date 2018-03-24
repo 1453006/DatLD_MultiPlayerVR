@@ -101,8 +101,9 @@ namespace DaydreamElements.Teleport
         private Transform currentController;
 
         // The selection result returned by the detector.
-        private BaseTeleportDetector.Result selectionResult;
+        public BaseTeleportDetector.Result selectionResult;
 
+        
         /// Returns true if the user is currently selecting a location to teleport to.
         public bool IsSelectingTeleportLocation
         {

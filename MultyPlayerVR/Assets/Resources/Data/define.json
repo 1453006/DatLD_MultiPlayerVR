@@ -64,7 +64,7 @@
   },
   {
     "id": 2,
-    "name": "CombineObject",
+    "name": "CombinationMap",
     "ignore": false,
     "data": [
       {
@@ -84,6 +84,13 @@
       {
         "fieldName": "itemidFinal",
         "dataType": -3,
+        "min": 0,
+        "max": 256,
+        "criteria": "[a-zA-Z0-9]"
+      },
+      {
+        "fieldName": "duration",
+        "dataType": -2,
         "min": 0,
         "max": 256,
         "criteria": "[a-zA-Z0-9]"

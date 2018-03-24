@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using DG.Tweening;
 
 public static class FBUtils
 {
@@ -103,6 +104,27 @@ public static class FBUtils
     
     }
 
+    public static void DoAnimJumpOut(GameObject obj)
+    {
+        obj.addMissingComponent<BoxCollider>();
+
+        float y = GetGroundYAxis();
+        float x = obj.transform.position.x + UnityEngine.Random.Range(-5f, 5f);
+        float z = obj.transform.position.z + UnityEngine.Random.Range(-5f,5f);
+        obj.transform.DOJump(new Vector3(x, y, z), 4f, 1, 1f);
+
+    }
+
+   
+    public static float GetGroundYAxis()
+    {
+        RaycastHit hit = new RaycastHit();
+        if (Physics.Raycast(Camera.main.transform.position, -Vector3.up, out hit))
+        {
+            return hit.transform.position.y;
+        }
+        return -1;
+    }
     #region need review
 
     public static string Url;

@@ -20,13 +20,13 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.8027682, g: 0.91254026, b: 0.9411765, a: 1}
+  m_AmbientSkyColor: {r: 0.87170386, g: 0.88235295, b: 0.77205884, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 77715b8b6b248994891d3ccad1ad330b, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 617d9be015db68348a623b01ea51a8c5, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -5855,7 +5855,7 @@ Prefab:
     - target: {fileID: 114474333023844474, guid: 94769511b0b4b8b40b3b274dc5233639,
         type: 2}
       propertyPath: emulatorConnectionMode
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 94769511b0b4b8b40b3b274dc5233639, type: 2}
@@ -6174,9 +6174,10 @@ MonoBehaviour:
   defaultLaser: {fileID: 833158368}
   visualPlayer: {fileID: 0}
   networkPlayer: {fileID: 0}
+  swipeControllerGO: {fileID: 0}
   teleportController: {fileID: 1175109423}
   isHandAttached: 0
-  handItem: {fileID: 0}
+  currentHandItem: {fileID: 0}
   currentState: 0
 --- !u!4 &1777590341
 Transform:

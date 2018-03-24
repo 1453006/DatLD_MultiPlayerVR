@@ -79,4 +79,5 @@ MonoBehaviour:
   - SendMoveTo
   - SendChangeAnim
   - SendAttachItemToHand
+  - SendRemoveHandItem
   DisableAutoOpenWizard: 1

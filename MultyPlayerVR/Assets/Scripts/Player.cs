@@ -40,12 +40,16 @@ public class Player : MonoBehaviour {
     public GameObject defaultLaser;
     public GameObject visualPlayer;
     public NetworkPlayer networkPlayer;
-   
+    //This for swipe actions
+    public GameObject swipeControllerGO;
+ 
+
+
     public DaydreamElements.Teleport.TeleportController teleportController;
     public static Player instance;
   
     public bool isHandAttached = false;
-    public Transform handItem = null;
+    public GameObject currentHandItem = null;
     public enum PlayerState
     {
         None,
@@ -75,7 +79,73 @@ public class Player : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         transform.position = GamePlay.instance.spawnPoint;
-	}
+        if(swipeControllerGO)
+            swipeControllerGO.GetComponent<SwipeController>().OnSwipeSelect += OnSwipeSelect;
+    }
+
+    #region SWIPE
+    bool isSendSwipe = false;
+    //swipe action callback
+    private void OnSwipeSelect(SwipeAngle index)
+    {
+        switch (index)
+        {
+            case SwipeAngle.TOP:
+                {
+                    Debug.Log("Swipe up!!!");
+                    if (isSendSwipe)
+                        return;
+                    OnSwipeUp();
+                }
+                break;
+            case SwipeAngle.RIGHT:
+                {
+                    Debug.Log("Swipe RIGHT!!!");
+                }
+                break;
+            case SwipeAngle.DOWN:
+                {
+                    Debug.Log("Swipe DOWN!!!");
+                }
+                break;
+            case SwipeAngle.LEFT:
+                {
+                    Debug.Log("Swipe LEFT!!!");
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    void OnSwipeUp()
+    {
+        isSendSwipe = true;
+        if(currentHandItem)
+        {
+            currentHandItem.transform.SetParent(null);
+            Vector3 endPos = teleportController.selectionResult.selection;
+            Quaternion endRot = currentHandItem.transform.rotation;
+            GameObject newItem = PhotonNetwork.Instantiate("GroupGame/"+currentHandItem.gameObject.name, endPos, endRot, 0);
+           
+            newItem.SetActive(false);
+            //another player will see this player hand on nothing
+            PhotonView playerPhotonView = visualPlayer.GetPhotonView();
+            playerPhotonView.RPC("SendRemoveHandItem", PhotonTargets.Others,playerPhotonView.viewID);
+
+            currentHandItem.transform.DOJump(endPos, 0.5f, 1, 1).OnComplete(() =>
+           {
+               isSendSwipe = false;
+               FBPoolManager.instance.returnObjectToPool(currentHandItem);
+               currentHandItem = null;
+               newItem.SetActive(true);
+              
+           });
+           
+        }
+       
+    }
+    #endregion
 
     // Update is called once per frame
     void Update()
@@ -158,29 +228,6 @@ public class Player : MonoBehaviour {
        
 
 
-    }
-
-    
-    public void OnAttachItemToHand(Transform item)
-    {
-        //SetState(PlayerState.Holding); 
-        if (visualPlayer)
-        {
-            handItem = item;
-            isHandAttached = true;
-            item.GetComponent<Rigidbody>().isKinematic = true;
-            NetworkPlayer netPlayer = visualPlayer.GetComponent<NetworkPlayer>();
-            netPlayer.AttachHandItem(item);
-            item.gameObject.layer = 2;
-        }
-    }
-
-    public void OnDetachItemFromHand()
-    {
-        if (visualPlayer)
-        {
-            handItem.SetParent(null);
-        }
     }
 
  }

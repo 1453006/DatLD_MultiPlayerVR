@@ -39,7 +39,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         WEAPON_MELEE,
         MathGun,
         MathBullet,
-        MathBallon
+        MathBallon,
+        CombinableObj,
         
     };
 
@@ -51,6 +52,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         instance = this;
         correctPos = this.transform.position;
         correctRot = this.transform.rotation;
+       
+
     }
 
     private void OnEnable()
@@ -65,12 +68,12 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         {
             Invoke("AutoReturnToPool",3f);
         }
+       
+
     }
     // Use this for initialization
     void Start() {
-
-        InitObject();
-        
+        InitObject(type);
         rigidBody = this.GetComponent<Rigidbody>();
         meshRenderer = this.GetComponent<MeshRenderer>();
 
@@ -149,6 +152,10 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 #region event system
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (type == TYPE.CombinableObj && thisItemData.Stackable == -1)
+        {
+            Player.instance.teleportController.selectionResult.selection = this.transform.position;
+        }
         if(Player.instance.currentState != Player.PlayerState.PlayingGame &&
             Player.instance.isHandAttached == false)
          Player.instance.SetState(Player.PlayerState.Selecting);
@@ -214,7 +221,20 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             case TYPE.WEAPON_MELEE:
                 {
                     //pickup item script need update
-                    Pickup();
+                    Player.instance.SetState(Player.PlayerState.None);
+                    PickupAndAttach();
+                    UpdateInventory(+1);
+                    break;
+                }
+            case TYPE.CombinableObj:
+                {
+                    Player.instance.SetState(Player.PlayerState.None);
+                    //static object can not be clicked
+                    if (thisItemData == null || thisItemData.Stackable == -1)
+                        break;
+
+                    PickUp();
+                    UpdateInventory(+1);
                     break;
                 }
 
@@ -266,6 +286,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     OnTriggerEnterMathBullet(other);
                     break;
                 }
+            case TYPE.CombinableObj:
+                {
+                    OnTriggerEnterCombinaleObject(other);
+                    break;
+                }
 
 
         }
@@ -273,9 +298,33 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
 
 
-    public void InitObject()
+    public void InitObject(TYPE type)
     {
-
+        switch (type)
+        {
+            case TYPE.Striker:
+                break;
+            case TYPE.Ball:
+                break;
+            case TYPE.MathButton:
+                break;
+            case TYPE.SwitchGameBtn:
+                break;
+            case TYPE.WEAPON_MELEE:
+                InitWeaponMelee();
+                break;
+            case TYPE.MathGun:
+                break;
+            case TYPE.MathBullet:
+                break;
+            case TYPE.MathBallon:
+                break;
+            case TYPE.CombinableObj:
+                InitCombinaleObj();
+                break;
+            default:
+                break;
+        }
     }
 
     public void UpdateObject()
@@ -349,15 +398,17 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             if (this.gameObject != null)
             {
                 this.gameObject.SetActive(false);
+                this.photonView.TransferOwnership(PhotonNetwork.player.ID);
+                PhotonNetwork.Destroy(this.gameObject);
+               
             }
-            PhotonView playerPhotonView = Player.instance.visualPlayer.GetPhotonView();
-            Player.instance.isHandAttached = true;
-            playerPhotonView.RPC("SendAttachItemToHand", PhotonTargets.AllViaServer, this.gameObject.name, playerPhotonView.viewID);
-            Player.instance.SetState(Player.PlayerState.None);
+         
+            //PhotonNetwork.Destroy(this.gameObject);
+
         }
     }
 
-    public void Pickup()
+    public void PickupAndAttach()
     {
         if (this.SentPickup)
         {
@@ -367,8 +418,26 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
         this.SentPickup = true;
         this.photonView.RPC("PunPickup", PhotonTargets.AllViaServer);
+        PhotonView playerPhotonView = Player.instance.visualPlayer.GetPhotonView();
+        Player.instance.isHandAttached = true;
+        playerPhotonView.RPC("SendAttachItemToHand", PhotonTargets.AllViaServer, this.gameObject.name, playerPhotonView.viewID);
+        Player.instance.SetState(Player.PlayerState.None);
     }
 
+    public void PickUp()
+    {
+        if (this.SentPickup)
+        {
+            // skip sending more pickups until the original pickup-RPC got back to this client
+            return;
+        }
+
+        this.SentPickup = true;
+        if (this.gameObject.GetPhotonView().viewID != 0)
+            this.photonView.RPC("PunPickup", PhotonTargets.AllViaServer);
+        else
+            FBPoolManager.instance.returnObjectToPool(this.gameObject);
+    }
     #endregion
 
     /// BEGIN HOCKEY GAME
@@ -675,6 +744,20 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     #endregion
 
     #region MELEE
+    
+    void InitWeaponMelee()
+    {
+        Item dataSrc = ItemDatabase.instance.getItemData(this.gameObject.name);
+        if (dataSrc != null)
+        {
+            Item itemData = this.gameObject.addMissingComponent<Item>();
+            itemData.SetData(dataSrc);
+            if (itemData.Id == -1) //dont have data
+                Debug.LogError("DID NOT HAVE THIS DATA YET :" + this.gameObject.name);
+            thisItemData = itemData;
+        }
+
+    }
 
     void UpdateMelee()
     {
@@ -759,6 +842,102 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         }
     }
     #endregion
+
+    #region CombinableObject
+    private Item thisItemData = null;
+    private string finalObjectName = "";
+    private Vector3 itemDockPos;
+  
+    /// <summary>
+    /// update inventory for THIS GAME OBJECT
+    /// </summary>
+    public void UpdateInventory(int amount)
+    {
+        if (!thisItemData)
+            return;
+        if (amount >= 0) //addItem
+            Inventory.instance.AddItem(thisItemData.Id, amount);
+        else
+            Inventory.instance.RemoveItem(thisItemData.Id, amount);
+
+    }
+
+    public bool isCombinableObject()
+    {
+        if (type == TYPE.CombinableObj)
+            return true;
+        return false;
+    }
+
+    void InitCombinaleObj()
+    {
+        Item dataSrc = ItemDatabase.instance.getItemData(this.gameObject.name);
+        if (dataSrc.Id != -1)
+        {
+           thisItemData = this.gameObject.addMissingComponent<Item>();
+            thisItemData.SetData(dataSrc);
+        }
+
+        Rigidbody rb = this.gameObject.addMissingComponent<Rigidbody>();
+        rb.isKinematic = true;
+
+       BoxCollider collider = this.gameObject.addMissingComponent<BoxCollider>();
+        if (thisItemData.Stackable != -1)
+            collider.isTrigger = true;
+    }
+
+    void OnTriggerEnterCombinaleObject(Collider other)
+    {
+        //static object cannot collect or collide with other
+        if (thisItemData == null || thisItemData.Stackable == -1)
+            return;
+        ObjectInGame obj = other.GetComponent<ObjectInGame>();
+        if(obj && obj.isCombinableObject())
+        {
+            Item thisData = this.gameObject.GetComponent<Item>();
+            Item otherData = other.gameObject.GetComponent<Item>();
+            CombinationMap map = ItemDatabase.instance.getCombinationMapById(thisData.Id);
+            if(map != null && this.photonView.viewID == 0)
+            {
+                if(map.ItemId01 == thisData.Id && map.ItemId02 == otherData.Id)
+                {
+                    OnCombineObject(map,this.gameObject,other.gameObject);
+                }
+                else if(map.ItemId01 == otherData.Id && map.ItemId02 == thisData.Id)
+                {
+                    OnCombineObject(map,other.gameObject,this.gameObject);
+                }
+            }
+        }
+    }
+
+    void OnCombineObject(CombinationMap map, GameObject item01, GameObject itemDock)
+    {
+    
+        FBPoolManager.instance.returnObjectToPool(item01);
+        int itemFinal = map.ItemIdFinal;
+        Item finalObj = ItemDatabase.instance.GetItemByID(itemFinal);
+
+        this.itemDockPos = itemDock.transform.position;
+        this.finalObjectName = finalObj.prefabName;
+        //display timer
+        GameObject timerDialog = PopupManager.ShowTimer("Group_Timer", map.Duration, itemDock);
+        timerDialog.GetComponent<BasePopup>().eventCompleteTimer += ObjectInGame_eventCompleteTimer;
+
+        
+    }
+
+    private void ObjectInGame_eventCompleteTimer()
+    {
+        GameObject obj = FBPoolManager.instance.getPoolObject(this.finalObjectName);
+        obj.transform.position = this.itemDockPos;
+        obj.SetActive(true);
+        //do animation fly
+        FBUtils.DoAnimJumpOut(obj);
+    }
+    #endregion
+
+
 
     /// END MATH GAME
 }
