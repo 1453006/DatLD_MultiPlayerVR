@@ -42,6 +42,8 @@ public class ItemDatabase : MonoBehaviour {
         return itemDatabase.Find(x => x.prefabName == name);
     }
 
+ 
+
     void Start()
     {
       

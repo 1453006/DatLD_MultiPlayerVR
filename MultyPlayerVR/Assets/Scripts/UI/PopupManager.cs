@@ -74,7 +74,7 @@ public class PopupManager : MonoBehaviour {
         go.transform.position = targetPos;
         go.SetActive(true);
         currentPopup = go;
-       // playerPos = Player.instance.gameObject.transform.position;
+        playerPos = Player.instance.gameObject.transform.position;
         showedPopup = true;
         return go;
     }
@@ -86,7 +86,7 @@ public class PopupManager : MonoBehaviour {
         baseScript.SetValues(parentObj, isFollow, duration);
         go.SetActive(true);
         currentPopup = go;
-       // playerPos = Player.instance.gameObject.transform.position;
+        playerPos = Player.instance.gameObject.transform.position;
         showedPopup = true;
         return go;
     }

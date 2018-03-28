@@ -144,7 +144,7 @@ MonoBehaviour:
   isFollowPlayer: 0
   duration: 0
   text: {fileID: 0}
-  fillBar: {fileID: 0}
+  fillBar: {fileID: 114675636695366910}
 --- !u!114 &114438123592053730
 MonoBehaviour:
   m_ObjectHideFlags: 1

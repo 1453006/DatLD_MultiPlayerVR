@@ -859,7 +859,7 @@ Prefab:
     - target: {fileID: 114474333023844474, guid: 94769511b0b4b8b40b3b274dc5233639,
         type: 2}
       propertyPath: emulatorConnectionMode
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 114141609002954814, guid: 94769511b0b4b8b40b3b274dc5233639, type: 2}

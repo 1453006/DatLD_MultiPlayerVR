@@ -123,6 +123,14 @@ public class Player : MonoBehaviour {
         isSendSwipe = true;
         if(currentHandItem)
         {
+            //if 
+            ObjectInGame scrp = currentHandItem.GetComponent<ObjectInGame>();
+            if(scrp && scrp.IsGunObjectInGame())
+            {
+                OnSwipeUpForGun(scrp);
+                return;
+            }
+
             currentHandItem.transform.SetParent(null);
             Vector3 endPos = teleportController.selectionResult.selection;
             Quaternion endRot = currentHandItem.transform.rotation;
@@ -144,6 +152,11 @@ public class Player : MonoBehaviour {
            
         }
        
+    }
+
+    void OnSwipeUpForGun(ObjectInGame objectScrp)
+    {
+        //swipe up to throw bullet from gun
     }
     #endregion
 

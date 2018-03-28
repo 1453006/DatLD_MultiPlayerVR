@@ -41,6 +41,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         MathBullet,
         MathBallon,
         CombinableObj,
+        WEAPON_GUN,
+        WEAPON_GUN_BULLET
         
     };
 
@@ -219,6 +221,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     break;
                 }
             case TYPE.WEAPON_MELEE:
+            case TYPE.WEAPON_GUN:
                 {
                     //pickup item script need update
                     Player.instance.SetState(Player.PlayerState.None);
@@ -291,6 +294,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     OnTriggerEnterCombinaleObject(other);
                     break;
                 }
+            case TYPE.WEAPON_GUN_BULLET:
+                {
+                    OnTriggerEnterGunBullet(other);
+                    break;
+                }
 
 
         }
@@ -311,6 +319,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             case TYPE.SwitchGameBtn:
                 break;
             case TYPE.WEAPON_MELEE:
+            case TYPE.WEAPON_GUN:
                 InitWeaponMelee();
                 break;
             case TYPE.MathGun:
@@ -349,6 +358,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             case TYPE.MathGun:
                 {
                     UpdateMathGun();
+                    break;
+                }
+            case TYPE.WEAPON_GUN:
+                {
+                    UpdateWeaponGun();
                     break;
                 }
         }
@@ -924,7 +938,9 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         GameObject timerDialog = PopupManager.ShowTimer("Group_Timer", map.Duration, itemDock);
         timerDialog.GetComponent<BasePopup>().eventCompleteTimer += ObjectInGame_eventCompleteTimer;
 
-        
+        //fake collect display for another player 
+        PhotonView playerPhotonView = Player.instance.visualPlayer.GetPhotonView();
+        playerPhotonView.RPC("SendFakeCollectItem", PhotonTargets.AllViaServer, playerPhotonView.viewID, itemFinal, itemDock.gameObject.name);
     }
 
     private void ObjectInGame_eventCompleteTimer()
@@ -937,6 +953,27 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     }
     #endregion
 
+    #region WEAPON_GUN
+
+    public void UpdateWeaponGun()
+    {
+        
+    }
+
+    public bool IsGunObjectInGame()
+    {
+        return (this.type == TYPE.WEAPON_GUN);
+    }
+
+    #endregion
+
+    #region GUN BULLET
+
+    public void OnTriggerEnterGunBullet( Collider other)
+    {
+        //check collide with animal group Object
+    }
+    #endregion
 
 
     /// END MATH GAME

@@ -180,6 +180,37 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             }
         }
     }
+
+    public void SendFakeCollectItem(int playerViewId, int itemId, string itemDockname)
+    {
+        PhotonView view = PhotonView.Find(playerViewId);
+        if (view)
+        {
+            itemDockname = itemDockname.Replace("(Clone)", "");
+            Transform visualPlayer = view.gameObject.transform;
+
+            Item finalItem =  ItemDatabase.instance.GetItemByID(itemId);
+           
+            if (finalItem == null )
+            {
+                return;
+            }
+
+            //START FAKE COLLECT
+            GameObject itemObj = FBPoolManager.instance.getPoolObject(finalItem.prefabName);
+            Vector3 dockPos = GameObject.Find(itemDockname).transform.position;
+
+            itemObj.transform.position = dockPos;
+            itemObj.SetActive(true);
+            itemObj.transform.DOJump(visualPlayer.transform.position, 2f, 1, 1).OnComplete(() =>
+            {
+                FBPoolManager.instance.returnObjectToPool(itemObj);
+            });
+
+
+
+        }
+    }
     #endregion
 
 
