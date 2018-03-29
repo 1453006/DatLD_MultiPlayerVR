@@ -1,0 +1,94 @@
+{
+  "id": 1,
+  "name": "GroupGameItems",
+  "data": [
+    {
+      "id": 1,
+      "itemId": "1",
+      "title": "WOOD_STICK",
+      "power": "0",
+      "description": "WOOD_STICK",
+      "iconName": "WoodStick",
+      "prefabName": "WoodStick",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 2,
+      "title": "MEAT",
+      "itemId": "2",
+      "power": "0",
+      "description": "MEAT",
+      "iconName": "Meat",
+      "prefabName": "Meat",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 3,
+      "title": "RICE_BAG",
+      "itemId": "3",
+      "power": "0",
+      "description": "RICE_BAG",
+      "iconName": "RiceBag",
+      "prefabName": "RiceBag",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 4,
+      "title": "WHEAT_BAG",
+      "itemId": "4",
+      "power": "0",
+      "description": "WHEAT_BAG",
+      "iconName": "WheatBag",
+      "prefabName": "WheatBag",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 5,
+      "title": "CAMP_FIRE",
+      "itemId": "5",
+      "power": "0",
+      "description": "CAMP_FIRE",
+      "iconName": "CampFire",
+      "prefabName": "CampFire",
+      "stackable": "-1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 6,
+      "title": "BIG_PAN",
+      "itemId": "6",
+      "power": "0",
+      "description": "BIG_PAN",
+      "iconName": "BigPan",
+      "prefabName": "BigPan",
+      "stackable": "-1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 7,
+      "title": "COMPLETE_RICE",
+      "itemId": "7",
+      "power": "0",
+      "description": "COMPLETE_RICE",
+      "iconName": "CompleteRice",
+      "prefabName": "CompleteRice",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 8,
+      "title": "COMPLETE_MEAT",
+      "itemId": "8",
+      "power": "0",
+      "description": "COMPLETE_MEAT",
+      "iconName": "CompleteMeat",
+      "prefabName": "CompleteMeat",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    }
+  ]
+}

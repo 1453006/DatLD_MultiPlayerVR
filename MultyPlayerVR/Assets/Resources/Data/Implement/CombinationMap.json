@@ -1,0 +1,20 @@
+{
+  "id": 2,
+  "name": "CombinationMap",
+  "data": [
+    {
+      "id": 1,
+      "itemId01": "3",
+      "itemId02": "5",
+      "itemidFinal": "7",
+      "duration": "30"
+    },
+    {
+      "id": 2,
+      "itemId02": "5",
+      "itemId01": "2",
+      "itemidFinal": "8",
+      "duration": "30"
+    }
+  ]
+}
