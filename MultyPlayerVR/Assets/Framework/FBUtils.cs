@@ -55,6 +55,13 @@ public static class FBUtils
         return null;
     }
 
+    public static void DeleteAllChild(this Transform parent)
+    {
+        foreach(Transform child in  parent)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
+    }
     public static void faceToMainCamera(this Transform parent)
     {
         parent.transform.LookAt(Camera.main.transform);

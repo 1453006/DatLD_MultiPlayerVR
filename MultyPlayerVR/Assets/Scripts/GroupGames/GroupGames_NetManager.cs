@@ -45,6 +45,13 @@ public class GroupGames_NetManager : MonoBehaviour {
     public virtual void OnJoinedLobby()
     {
         Debug.Log("OnJoinedLobby(). This client is connected and does get a room-list, which gets stored as PhotonNetwork.GetRoomList(). This script now calls: PhotonNetwork.JoinRandomRoom();");
+        foreach (RoomInfo game in PhotonNetwork.GetRoomList())
+        {
+            Debug.Log(game.name);
+            Debug.Log(game.PlayerCount);
+            Debug.Log(game.MaxPlayers);
+        }
+
         PhotonNetwork.JoinOrCreateRoom("room_test", new RoomOptions() { IsVisible = true, MaxPlayers = 2 }, null);
     }
 
@@ -64,6 +71,8 @@ public class GroupGames_NetManager : MonoBehaviour {
     public void OnJoinedRoom()
     {
         Debug.Log("OnJoinedRoom() called by PUN. Now this client is in a room. From here on, your game would be running. For reference, all callbacks are listed in enum: PhotonNetworkingMessage");
+
+        Debug.Log(PhotonNetwork.room.Name);
 
         PhotonNetwork.Instantiate(avatarPrefabs.name, GamePlay.instance.spawnPoint, Quaternion.identity, 0);
 

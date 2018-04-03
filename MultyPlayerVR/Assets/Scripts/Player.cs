@@ -85,6 +85,10 @@ public class Player : MonoBehaviour {
 
     #region SWIPE
     bool isSendSwipe = false;
+    public bool isSendShoot = false;
+
+    float shootDelay = 0f;
+    const float DELAY_SHOOT = 0.5f;
     //swipe action callback
     private void OnSwipeSelect(SwipeAngle index)
     {
@@ -120,17 +124,19 @@ public class Player : MonoBehaviour {
 
     void OnSwipeUp()
     {
-        isSendSwipe = true;
-        if(currentHandItem)
+        if(currentHandItem && !isSendShoot)
         {
-            //if 
+            //if current hand item is gun
             ObjectInGame scrp = currentHandItem.GetComponent<ObjectInGame>();
             if(scrp && scrp.IsGunObjectInGame())
             {
+                isSendShoot = true;
                 OnSwipeUpForGun(scrp);
+                
                 return;
             }
 
+            isSendSwipe = true;
             currentHandItem.transform.SetParent(null);
             Vector3 endPos = teleportController.selectionResult.selection;
             Quaternion endRot = currentHandItem.transform.rotation;
@@ -157,6 +163,7 @@ public class Player : MonoBehaviour {
     void OnSwipeUpForGun(ObjectInGame objectScrp)
     {
         //swipe up to throw bullet from gun
+        objectScrp.throwBullet();
     }
     #endregion
 
@@ -170,6 +177,17 @@ public class Player : MonoBehaviour {
             visualPlayer.transform.position = this.transform.position;
             visualPlayer.transform.rotation = this.transform.rotation;
         }
+
+        if (isSendShoot)
+        {
+            shootDelay += Time.deltaTime;
+            if (shootDelay >= DELAY_SHOOT)
+            {
+                shootDelay = 0f;
+                isSendShoot = false;
+            }
+        }
+
         if (isHandAttached)
         {
             if (GvrControllerInput.HomeButtonDown)
@@ -177,6 +195,8 @@ public class Player : MonoBehaviour {
 
             }
         }
+
+        
     
     }
 

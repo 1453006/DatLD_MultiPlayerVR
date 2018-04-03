@@ -20,10 +20,10 @@ public class PopupManager : MonoBehaviour {
 	void Update () {
 		if(showedPopup)
         {
-            if(currentPopup && Player.instance.transform.position != playerPos)
-            {
-                DisableDialog(currentPopup);
-            }
+            //if(currentPopup && Player.instance.transform.position != playerPos)
+            //{
+            //    DisableDialog(currentPopup);
+            //}
         }
 	}
 

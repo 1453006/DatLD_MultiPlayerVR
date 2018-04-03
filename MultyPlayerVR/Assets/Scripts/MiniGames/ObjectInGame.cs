@@ -42,7 +42,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         MathBallon,
         CombinableObj,
         WEAPON_GUN,
-        WEAPON_GUN_BULLET
+        WEAPON_GUN_BULLET,
+        SwitchRoomBtn,
         
     };
 
@@ -70,6 +71,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         {
             Invoke("AutoReturnToPool",3f);
         }
+        if (type == TYPE.WEAPON_GUN_BULLET)
+            timer = 0f;
        
 
     }
@@ -240,6 +243,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     UpdateInventory(+1);
                     break;
                 }
+            case TYPE.SwitchRoomBtn:
+                {
+                    OnSwitchRoomBtnClicked();
+                    break;
+                }
 
         }
 
@@ -331,6 +339,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             case TYPE.CombinableObj:
                 InitCombinaleObj();
                 break;
+
             default:
                 break;
         }
@@ -362,7 +371,12 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 }
             case TYPE.WEAPON_GUN:
                 {
-                    UpdateWeaponGun();
+                   
+                    break;
+                }
+            case TYPE.WEAPON_GUN_BULLET:
+                {
+                    UpdateBullet();
                     break;
                 }
         }
@@ -955,9 +969,25 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     #region WEAPON_GUN
 
-    public void UpdateWeaponGun()
+    
+
+    public void throwBullet()
     {
-        
+        string gunName = this.gameObject.name.Replace("(Clone)", "");
+        GameObject bullet = FBPoolManager.instance.getPoolObject(gunName + "_BULLET");
+        if (!bullet)
+            return;
+
+       ObjectInGame bulletController = bullet.addMissingComponent<ObjectInGame>();
+        bulletController.type = TYPE.WEAPON_GUN_BULLET;
+        Transform spawnPoint = this.transform.findChildRecursively("spawn_point");
+        if(spawnPoint)
+        {
+            bullet.transform.position = spawnPoint.position;
+            bullet.transform.rotation = spawnPoint.rotation;
+        }
+
+        bullet.SetActive(true);
     }
 
     public bool IsGunObjectInGame()
@@ -968,10 +998,36 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     #endregion
 
     #region GUN BULLET
+    private const float MOVE_SPEED = 3f;
+    private float lifeTime = 3.0f;
+    private float timer = 0f;
 
+    public void UpdateBullet()
+    {
+        this.transform.Translate(Vector3.forward * MOVE_SPEED *  Time.deltaTime);
+        timer += Time.deltaTime;
+        if (timer >= lifeTime)
+            FBPoolManager.instance.returnObjectToPool(this.gameObject);
+
+    }
     public void OnTriggerEnterGunBullet( Collider other)
     {
+        FBPoolManager.instance.returnObjectToPool(this.gameObject);
         //check collide with animal group Object
+        GroupObject obj = other.GetComponent<GroupObject>();
+        if (obj)
+        {
+            
+            obj.UpdateHP(-10f);
+        }
+    }
+    #endregion
+
+    #region Switch room btn
+    
+    void OnSwitchRoomBtnClicked()
+    {
+        LobbyNetmanager.instance.CreateOrJoinRoom(extentData.Trim());
     }
     #endregion
 

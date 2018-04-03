@@ -15,6 +15,8 @@ public class NetworkPlayer : Photon.MonoBehaviour {
     private Vector3 lowerJawInitPos;
     public Transform handItem;
 
+    public bool isOffline = false;
+
 
 #region Voice Regconition
     public AudioSource audioSource;
@@ -94,6 +96,14 @@ public class NetworkPlayer : Photon.MonoBehaviour {
         item.transform.localPosition = Vector3.zero; 
     }
 
+    /// <summary>
+    /// change this avatar to offline  => control locally
+    /// </summary>
+    public void ChangeToOffline()
+    {
+        this.isOffline = true;
+    }
+
 	// Update is called once per frame
 	void Update () {
 
@@ -104,7 +114,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
         //    float volume = GetAveragedVolume();
         //    visualLowerJaw.position = lowerJawInitPos - transform.up * volume;
         //}
-        if (photonView.isMine)
+        if (isOffline || photonView.isMine)
         {
 
             //visualLowerJaw.localPosition = new Vector3(lowerJawInitPos.x + MicInput.instance.MicLoudness / 15f, lowerJawInitPos.y, lowerJawInitPos.z);
