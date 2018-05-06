@@ -95,6 +95,7 @@ public class LobbyNetmanager : MonoBehaviour{
             if (currentGroupRoom == null)
             {
                 GameObject dialog = PopupManager.ShowDialog(dialogCreateNewRoom.name, -1);
+                dialog.SetActive(false);
                 Transform btnOkay = dialog.transform.findChildRecursively("BtnYES");
                 Transform btnNo = dialog.transform.findChildRecursively("BtnNO");
                 if (btnOkay)
@@ -105,15 +106,20 @@ public class LobbyNetmanager : MonoBehaviour{
                 {
                     btnNo.GetComponent<Button>().onClick.AddListener(delegate { OnDisableDialog(dialog); });
                 }
+
+                dialog.SetActive(true);
                 return;
             }
-            PhotonNetwork.JoinOrCreateRoom(currentGroupRoom, new RoomOptions() { IsVisible = true, MaxPlayers = 4 }, null);
+            //if(PhotonNetwork.JoinOrCreateRoom(currentGroupRoom, new RoomOptions() { IsVisible = true, MaxPlayers = 4 }, null))
+            //    PhotonNetwork.LoadLevel("GroupRoom");
         }
        else if ( type == "dual")
         {
             if (currentDualRoom == null)
             {
+                
                 GameObject dialog = PopupManager.ShowDialog(dialogCreateNewRoom.name, -1);
+                dialog.SetActive(false);
                 Transform btnOkay = dialog.transform.findChildRecursively("BtnYES");
                 Transform btnNo = dialog.transform.findChildRecursively("BtnNO");
                 if (btnOkay)
@@ -124,9 +130,11 @@ public class LobbyNetmanager : MonoBehaviour{
                 {
                     btnNo.GetComponent<Button>().onClick.AddListener(delegate { OnDisableDialog(dialog); });
                 }
+                dialog.SetActive(true);
                 return;
             }
-            PhotonNetwork.JoinOrCreateRoom(currentDualRoom, new RoomOptions() { IsVisible = true, MaxPlayers = 2 }, null);
+            //if(PhotonNetwork.JoinOrCreateRoom(currentDualRoom, new RoomOptions() { IsVisible = true, MaxPlayers = 2 }, null))
+            //    PhotonNetwork.LoadLevel("DualRoom");
         }
     }
 
@@ -135,22 +143,26 @@ public class LobbyNetmanager : MonoBehaviour{
         string newRoomName;
         int index = 0;
         byte numPlayer = 0;
+        string levelName = "";
         if (type == "group")
         {
             index = listGroupData.Count + 1;
             numPlayer = 4;
+            levelName = "GroupRoom";
         }
         else if (type == "dual")
         {
             index = listDualData.Count + 1;
             numPlayer = 2;
+            levelName = "DualRoom";
         }
         newRoomName = type + index;
         PopupManager.DisableCurrentDialog();
         if ( PhotonNetwork.CreateRoom(newRoomName, new RoomOptions() { IsVisible = true,IsOpen = true, MaxPlayers = numPlayer }, null))
         {
             Debug.Log("Send create new room successfully");
-            PhotonNetwork.LoadLevel("GroupRoom");
+            PhotonNetwork.LeaveRoom();
+            PhotonNetwork.LoadLevel(levelName);
         }
 
         

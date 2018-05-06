@@ -28,8 +28,9 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     private float correctSpeed;
 
     private float initScaleY;
-    
 
+    private const float BULLET_DAMAGE = 35f;
+    private const float AXE_DAMAGE = 20f;
     public enum TYPE
     {
         Striker,
@@ -44,6 +45,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         WEAPON_GUN,
         WEAPON_GUN_BULLET,
         SwitchRoomBtn,
+        QuestObject
         
     };
 
@@ -157,7 +159,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 #region event system
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (type == TYPE.CombinableObj && thisItemData.Stackable == -1)
+        if (type == TYPE.CombinableObj && thisItemData.Stackable == -1||
+            type == TYPE.QuestObject)
         {
             Player.instance.teleportController.selectionResult.selection = this.transform.position;
         }
@@ -227,9 +230,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             case TYPE.WEAPON_GUN:
                 {
                     //pickup item script need update
+                    if (IsHasWeapon())
+                        return;
                     Player.instance.SetState(Player.PlayerState.None);
                     PickupAndAttach();
-                    UpdateInventory(+1);
+                    //UpdateInventory(+1);
                     break;
                 }
             case TYPE.CombinableObj:
@@ -307,13 +312,51 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     OnTriggerEnterGunBullet(other);
                     break;
                 }
+            case TYPE.QuestObject:
+                {
+                    OnTriggerEnterQuestObject(other);
+                    break;
+                }
 
 
         }
     }
 
-
-
+    private void OnTriggerExit(Collider other)
+    {
+        switch (type)
+        {
+            case TYPE.Striker:
+                break;
+            case TYPE.Ball:
+                break;
+            case TYPE.MathButton:
+                break;
+            case TYPE.SwitchGameBtn:
+                break;
+            case TYPE.WEAPON_MELEE:
+                break;
+            case TYPE.MathGun:
+                break;
+            case TYPE.MathBullet:
+                break;
+            case TYPE.MathBallon:
+                break;
+            case TYPE.CombinableObj:
+                break;
+            case TYPE.WEAPON_GUN:
+                break;
+            case TYPE.WEAPON_GUN_BULLET:
+                break;
+            case TYPE.SwitchRoomBtn:
+                break;
+            case TYPE.QuestObject:
+         
+                break;
+            default:
+                break;
+        }
+    }
     public void InitObject(TYPE type)
     {
         switch (type)
@@ -338,6 +381,10 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 break;
             case TYPE.CombinableObj:
                 InitCombinaleObj();
+                break;
+            case TYPE.QuestObject:
+                InitQuestObject();
+               
                 break;
 
             default:
@@ -775,10 +822,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     
     void InitWeaponMelee()
     {
-        Item dataSrc = ItemDatabase.instance.getItemData(this.gameObject.name);
-        if (dataSrc != null)
+        Item dataSrc = GroupGameDatabase.instance.getItemData(this.gameObject.name);
+        if (dataSrc != null || dataSrc.Id != -1)
         {
             Item itemData = this.gameObject.addMissingComponent<Item>();
+            
             itemData.SetData(dataSrc);
             if (itemData.Id == -1) //dont have data
                 Debug.LogError("DID NOT HAVE THIS DATA YET :" + this.gameObject.name);
@@ -795,9 +843,9 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     void OnTriggerEnterAXE(Collider other)
     {
         GroupObject obj = other.GetComponent<GroupObject>();
-        if(obj)
+        if(obj && obj.tag == "tree")
         {
-            obj.UpdateHP(-10f);
+            obj.UpdateHP(-AXE_DAMAGE);
         }
     }
     #endregion
@@ -805,7 +853,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     /// BEGIN MATH GAME
 
     #region MathGun
-    private static float BULLETSTRENGTH = 20.0f;
+    private const float BULLETSTRENGTH = 20.0f;
     void StartMathGun()
     {
         
@@ -899,10 +947,12 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     void InitCombinaleObj()
     {
-        Item dataSrc = ItemDatabase.instance.getItemData(this.gameObject.name);
+        Item dataSrc = GroupGameDatabase.instance.getItemData(this.gameObject.name);
         if (dataSrc.Id != -1)
         {
+            
            thisItemData = this.gameObject.addMissingComponent<Item>();
+          
             thisItemData.SetData(dataSrc);
         }
 
@@ -924,7 +974,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         {
             Item thisData = this.gameObject.GetComponent<Item>();
             Item otherData = other.gameObject.GetComponent<Item>();
-            CombinationMap map = ItemDatabase.instance.getCombinationMapById(thisData.Id);
+            CombinationMap map = GroupGameDatabase.instance.getCombinationMapById(thisData.Id);
             if(map != null && this.photonView.viewID == 0)
             {
                 if(map.ItemId01 == thisData.Id && map.ItemId02 == otherData.Id)
@@ -935,6 +985,10 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 {
                     OnCombineObject(map,other.gameObject,this.gameObject);
                 }
+                else
+                {
+                    PopupManager.ShowWrongSignal(this.gameObject.transform.position);
+                }
             }
         }
     }
@@ -944,7 +998,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     
         FBPoolManager.instance.returnObjectToPool(item01);
         int itemFinal = map.ItemIdFinal;
-        Item finalObj = ItemDatabase.instance.GetItemByID(itemFinal);
+        Item finalObj = GroupGameDatabase.instance.GetItemByID(itemFinal);
 
         this.itemDockPos = itemDock.transform.position;
         this.finalObjectName = finalObj.prefabName;
@@ -969,6 +1023,16 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     #region WEAPON_GUN
 
+    public bool IsHasWeapon()
+    {
+        GameObject currentHandObj = Player.instance.currentHandItem;
+        if (currentHandObj && currentHandObj.GetComponent<Item>().IsWeapon())
+            return true;
+
+       if (Inventory.instance.HasWeapon())
+            return true;
+        return false;
+    }
     
 
     public void throwBullet()
@@ -995,10 +1059,15 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         return (this.type == TYPE.WEAPON_GUN);
     }
 
+    public bool IsMeleetInGame()
+    {
+        return (this.type == TYPE.WEAPON_MELEE);
+    }
+
     #endregion
 
     #region GUN BULLET
-    private const float MOVE_SPEED = 3f;
+    private const float MOVE_SPEED = 10f;
     private float lifeTime = 3.0f;
     private float timer = 0f;
 
@@ -1012,14 +1081,19 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     }
     public void OnTriggerEnterGunBullet( Collider other)
     {
-        FBPoolManager.instance.returnObjectToPool(this.gameObject);
+        
         //check collide with animal group Object
         GroupObject obj = other.GetComponent<GroupObject>();
-        if (obj)
+        if (obj && obj.tag == "animal")
         {
             
-            obj.UpdateHP(-10f);
+            obj.UpdateHP(-BULLET_DAMAGE);
         }
+        else if(obj)
+        {
+            PopupManager.ShowWrongSignal(this.transform.position);
+        }
+        FBPoolManager.instance.returnObjectToPool(this.gameObject);
     }
     #endregion
 
@@ -1029,6 +1103,96 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     {
         LobbyNetmanager.instance.CreateOrJoinRoom(extentData.Trim());
     }
+    #endregion
+
+    #region QuestObject
+
+    private int mainQuestID = -1;
+    private List<QuestData> listQuestData;
+    private bool SendTriggerQuestItem = false;
+    void InitQuestObject()
+    {
+        this.mainQuestID = int.Parse(extentData);
+        listQuestData = new List<QuestData>();
+        foreach(QuestData q in GroupGameDatabase.instance.getAllConstantQuest())
+        {
+            if(q.mainQuestId == mainQuestID)
+            {
+                listQuestData.Add(q);
+            }
+        }
+    }
+
+
+    void OnTriggerEnterQuestObject(Collider other)
+    {
+       
+        //update quest process data
+        ObjectInGame obj = other.GetComponent<ObjectInGame>();
+        if (obj && obj.isCombinableObject())
+        {
+            SendTriggerQuestItem = true;
+            other.gameObject.SetActive(false);
+            Item otherData = other.gameObject.GetComponent<Item>();
+            QuestData q = listQuestData.Find(x => x.requireItemId == otherData.Id);
+            if(q != null && !QuestManager.instance.isFinishQuest(q))
+            {
+                FBPoolManager.instance.returnObjectToPool(other.gameObject);
+                QuestManager.instance.UpdateQuestProcess(q, +1);
+                Invoke("ResetSendTrigger", 2f);
+            }
+            else
+            {
+                Transform pos = this.transform.findChildRecursively("wrong_marker");
+                if(pos)
+                    PopupManager.ShowWrongSignal(pos.position);
+                else
+                    PopupManager.ShowWrongSignal(this.transform.position);
+            }
+        }
+       
+      
+    }
+    
+    void ResetSendTrigger()
+    {
+        SendTriggerQuestItem = false;
+    }
+   
+   
+    public void OnFinishQuest(int mainQuestId, int subQuestId, bool createNewPref = false)
+    {
+        if (createNewPref)
+        {
+           
+            QuestData q = GroupGameDatabase.instance.getAllConstantQuest().Find(x => (x.mainQuestId == mainQuestId && x.subQuestId == subQuestId));
+            if(q != null)
+            {
+                string prefName = q.questObjectRewardPref;
+                GameObject go = FBPoolManager.instance.getPoolObject(prefName);
+                if(go)
+                {
+                    go.transform.position = transform.position;
+                    go.transform.rotation = transform.rotation;
+
+                    //hide quest object
+                    this.gameObject.SetActive(false);
+
+                    go.SetActive(true);
+                }
+            }
+        }
+        else
+        {
+            Transform rewardChild = this.gameObject.transform.findChildRecursively(mainQuestId + "_" + subQuestId);
+            if (rewardChild)
+            {
+                //play anim here
+                rewardChild.gameObject.SetActive(true);
+            }
+        }
+    }
+
     #endregion
 
 

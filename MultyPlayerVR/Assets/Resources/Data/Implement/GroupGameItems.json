@@ -89,6 +89,61 @@
       "prefabName": "CompleteMeat",
       "stackable": "1",
       "receiveItemId": "-1"
+    },
+    {
+      "id": 9,
+      "title": "Oven",
+      "itemId": "9",
+      "power": "0",
+      "description": "Oven Desc",
+      "iconName": "Oven",
+      "prefabName": "Oven",
+      "stackable": "-1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 10,
+      "title": "GroupAnimals",
+      "itemId": "10",
+      "power": "0",
+      "description": "NULL",
+      "iconName": "NULL",
+      "prefabName": "GroupAnimals",
+      "stackable": "-1",
+      "receiveItemId": "2"
+    },
+    {
+      "id": 11,
+      "title": "GroupTrees",
+      "itemId": "11",
+      "power": "0",
+      "description": "NULL",
+      "iconName": "NULL",
+      "prefabName": "GroupTrees",
+      "stackable": "-1",
+      "receiveItemId": "1"
+    },
+    {
+      "id": 12,
+      "title": "Weapon_AXE",
+      "itemId": "12",
+      "power": "10",
+      "description": "WEAPON_AXE",
+      "iconName": "Weapon_AXE",
+      "prefabName": "Weapon_AXE",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 13,
+      "title": "Weapon_GUN01",
+      "itemId": "13",
+      "power": "20",
+      "description": "Weapon_GUN01",
+      "iconName": "Weapon_GUN01",
+      "prefabName": "Weapon_GUN01",
+      "stackable": "1",
+      "receiveItemId": "-1"
     }
   ]
 }

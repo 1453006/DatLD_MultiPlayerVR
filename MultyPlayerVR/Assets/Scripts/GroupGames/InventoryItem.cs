@@ -42,6 +42,7 @@ public class InventoryItem : MonoBehaviour, IPointerDownHandler, IPointerEnterHa
             if(Player.instance.currentHandItem)
             {
                 Item olddata = Player.instance.currentHandItem.GetComponent<Item>();
+              
                 if (olddata.Id != -1)
                     Inventory.instance.AddItem(olddata.Id);
             }

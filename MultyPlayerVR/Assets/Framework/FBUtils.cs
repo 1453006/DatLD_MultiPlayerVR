@@ -115,21 +115,26 @@ public static class FBUtils
     {
         obj.addMissingComponent<BoxCollider>();
 
-        float y = GetGroundYAxis();
+       
         float x = obj.transform.position.x + UnityEngine.Random.Range(-5f, 5f);
         float z = obj.transform.position.z + UnityEngine.Random.Range(-5f,5f);
-        obj.transform.DOJump(new Vector3(x, y, z), 4f, 1, 1f);
+        float y = GetGroundYAxis(new Vector3(x, 100f, z));
+         obj.transform.DOJump(new Vector3(x, y, z), 4f, 1, 1f);
+        //obj.transform.localPosition = new Vector3(x, y, z);
 
     }
 
    
-    public static float GetGroundYAxis()
+    public static float GetGroundYAxis(Vector3 fakePos)
     {
         RaycastHit hit = new RaycastHit();
-        if (Physics.Raycast(Camera.main.transform.position, -Vector3.up, out hit))
+        Ray ray = new Ray(fakePos, Vector3.down);
+        if (Physics.Raycast(ray, out hit, 200f/*, 1<< LayerMask.NameToLayer("Ground")*/))
         {
-            return hit.transform.position.y;
+            Debug.DrawRay(fakePos,hit.point, Color.green);
+            return hit.point.y;
         }
+       
         return -1;
     }
     #region need review
@@ -179,6 +184,8 @@ public static class FBUtils
             return false;
     }
 
-    
-#endregion
+
+    #endregion
+
+
 }

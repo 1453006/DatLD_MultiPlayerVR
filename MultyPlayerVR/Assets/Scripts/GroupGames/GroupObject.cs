@@ -65,18 +65,40 @@ public class GroupObject : MonoBehaviour {
             SetState(STATE.DEACTIVE);
         }
 
+        //UpdateHitGround();
     }
 
 
     public void UpdateHP(float atk)
     {
-        hp += atk;
-        if(hp <= 0)
+        // hp += atk;
+        parent.OnUpdateHp(uID, atk);
+        if (hp <= 0)
         {
             SetState(STATE.DEACTIVE);
         }
+
+       
     }
 
+    public void OnSetIdle()
+    {
+        if(animator)
+        {
+            animator.SetFloat("Speed_f", 0f);
+            animator.SetBool("Eat_b", false);
+        }
+        this.transform.DOComplete();
+        
+
+    }
+    void UpdateHitGround()
+    {
+        float y = FBUtils.GetGroundYAxis(new Vector3(transform.position.x,100,transform.position.z));
+
+        this.transform.position = new Vector3(this.transform.position.x,
+            y, this.transform.position.z);
+    }
     public void MoveTo(Vector3 pos,float duration)
     {
         float v = (float)( Vector3.Distance(transform.position, pos) / duration);
@@ -86,9 +108,11 @@ public class GroupObject : MonoBehaviour {
             animator.SetBool("Eat_b", false);
         }
 
+        
         this.transform.DOMove(pos, duration).SetEase(Ease.Linear).OnComplete( () => {
             animator.SetFloat("Speed_f", 0);
             animator.SetBool("Eat_b", false);
+            //UpdateHitGround();
         } );
 
        this.transform.LookAt(pos);

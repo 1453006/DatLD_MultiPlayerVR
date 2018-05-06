@@ -31,4 +31,9 @@ public class Item : MonoBehaviour {
         this.Stackable = data.Stackable;
         this.ReceiveItemId = data.ReceiveItemId;
     }
+
+    public bool IsWeapon()
+    {
+        return this.prefabName.Contains("Weapon");
+    }
 }

@@ -126,6 +126,9 @@ public class Player : MonoBehaviour {
     {
         if(currentHandItem && !isSendShoot)
         {
+            FBSoundManager.Play("BallThrow");
+
+            GameObject fx = FBParticleManager.GetEffect("FX_Fire", 2f);
             //if current hand item is gun
             ObjectInGame scrp = currentHandItem.GetComponent<ObjectInGame>();
             if(scrp && scrp.IsGunObjectInGame())
@@ -136,12 +139,19 @@ public class Player : MonoBehaviour {
                 return;
             }
 
+            if (scrp && scrp.IsMeleetInGame())
+                return;// not throw weapon
+
             isSendSwipe = true;
             currentHandItem.transform.SetParent(null);
             Vector3 endPos = teleportController.selectionResult.selection;
             Quaternion endRot = currentHandItem.transform.rotation;
             GameObject newItem = PhotonNetwork.Instantiate("GroupGame/"+currentHandItem.gameObject.name, endPos, endRot, 0);
-           
+
+            //test only delete it
+            fx.transform.position = endPos;
+            fx.SetActive(true);
+            //test
             newItem.SetActive(false);
             //another player will see this player hand on nothing
             PhotonView playerPhotonView = visualPlayer.GetPhotonView();

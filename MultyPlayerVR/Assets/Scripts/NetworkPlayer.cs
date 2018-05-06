@@ -66,7 +66,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
         }
 
         //enable voice recorder only if it is mine;
-        if(photonView.isMine)
+        if(photonView.isMine || isOffline)
         {
             this.transform.GetComponent<PhotonVoiceRecorder>().enabled = true;
             //save this avatar to player prefab
@@ -166,7 +166,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             {
                 FBPoolManager.instance.returnObjectToPool(child.gameObject);
             }
-
+            
             go.transform.SetParent(rightHand);
             go.transform.localPosition = Vector3.zero;
             go.transform.localRotation = Quaternion.identity;
@@ -191,6 +191,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
         }
     }
 
+    [PunRPC]
     public void SendFakeCollectItem(int playerViewId, int itemId, string itemDockname)
     {
         PhotonView view = PhotonView.Find(playerViewId);
@@ -199,7 +200,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
             itemDockname = itemDockname.Replace("(Clone)", "");
             Transform visualPlayer = view.gameObject.transform;
 
-            Item finalItem =  ItemDatabase.instance.GetItemByID(itemId);
+            Item finalItem =  GroupGameDatabase.instance.GetItemByID(itemId);
            
             if (finalItem == null )
             {
@@ -221,6 +222,8 @@ public class NetworkPlayer : Photon.MonoBehaviour {
 
         }
     }
+
+   
     #endregion
 
 

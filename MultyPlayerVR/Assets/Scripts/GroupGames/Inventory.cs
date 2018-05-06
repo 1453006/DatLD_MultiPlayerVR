@@ -21,7 +21,8 @@ public class Inventory : MonoBehaviour {
 
     private void OnDisable()
     {
-        Player.instance.SetState(Player.PlayerState.None);
+        if(Player.instance != null)
+            Player.instance.SetState(Player.PlayerState.None);
     }
     // Use this for initialization
     void Start () {
@@ -43,6 +44,19 @@ public class Inventory : MonoBehaviour {
         AddItem(1,3);
         AddItem(2,5);
         AddItem(3,10);
+
+        SaveInventory();
+
+
+    }
+
+    void SaveInventory()
+    {
+        string saveData = JsonHelper.arrayToJson<ItemData>(listData.ToArray());
+
+
+        Debug.Log("<color=yellow> mydata  is" + saveData + " </color>");
+
         
     }
 	
@@ -67,7 +81,7 @@ public class Inventory : MonoBehaviour {
 
     public void AddItem(int id, int amountToAdd = 1)
     {
-        Item itemToAdd = ItemDatabase.instance.GetItemByID(id);
+        Item itemToAdd = GroupGameDatabase.instance.GetItemByID(id);
         if (itemToAdd.Stackable == 1 && CheckIfItemIsInInventory(itemToAdd))
         {
             for (int i = 0; i < listData.Count; i++)
@@ -88,7 +102,7 @@ public class Inventory : MonoBehaviour {
                 if (slot.transform.childCount == 0)
                 {
                     GameObject itemObj = Instantiate(inventoryItem);
-                    ItemData itemData = new ItemData { Item = itemToAdd, amount = amountToAdd, SlotIndex = slot.GetComponent<InventoryItem>().index };
+                    ItemData itemData = new ItemData { Item = itemToAdd,itemId = itemToAdd.Id, amount = amountToAdd, SlotIndex = slot.GetComponent<InventoryItem>().index };
                     listData.Add(itemData);
                     InventoryItem scrp = itemObj.addMissingComponent<InventoryItem>();
                     scrp.InitData(-1, InventoryType.ITEM, itemData);
@@ -110,7 +124,7 @@ public class Inventory : MonoBehaviour {
 
     public bool RemoveItem(int id,int amountToRemove = 1)
     {
-        Item itemToAdd = ItemDatabase.instance.GetItemByID(id);
+        Item itemToAdd = GroupGameDatabase.instance.GetItemByID(id);
         if (CheckIfItemIsInInventory(itemToAdd))
         {
             for (int i = 0; i < listData.Count; i++)
@@ -179,4 +193,13 @@ public class Inventory : MonoBehaviour {
         return cond1 && cond2;
     }
 
+    public bool HasWeapon()
+    {
+        foreach (var item in listData)
+        {
+            if (item.Item.prefabName.Contains("Weapon"))
+                return true;
+        }
+        return false;
+    }
 }

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class BasePopup : MonoBehaviour {
+public class BasePopup : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler {
 
     public GameObject belongTo = null;
     public bool isFollowPlayer;
@@ -25,25 +26,31 @@ public class BasePopup : MonoBehaviour {
         text = this.GetComponentInChildren<Text>();
     }
     // Use this for initialization
-    void Start () {
-		if(belongTo)
+    void Start() {
+        if (belongTo)
         {
             transform.SetParent(belongTo.transform);
             BoxCollider collider = belongTo.gameObject.GetComponent<BoxCollider>();
-            if(collider)
+            if (collider)
             {
                 float height = collider.size.y;
                 transform.localPosition = new Vector3(0, height, 0);
             }
             else
             {
-                transform.localPosition = Vector3.zero;
+                //transform.localPosition = Vector3.zero;
             }
-            
+
         }
+
+        ShowPopup();
     }
-	
-    public void SetValues(GameObject belong,bool isFollow,float lifetime)
+
+    public virtual void ShowPopup()
+    {
+        isFollowPlayer = true;
+    }
+    public void SetValues(GameObject belong, bool isFollow, float lifetime)
     {
         this.belongTo = belong;
         this.isFollowPlayer = isFollow;
@@ -52,18 +59,18 @@ public class BasePopup : MonoBehaviour {
 
     public void SetText(string value)
     {
-       if(text)
+        if (text)
             text.text = value;
     }
     // Update is called once per frame
-    void Update () {
-		if(isFollowPlayer)
+    void Update() {
+        if (isFollowPlayer)
             transform.faceToMainCamera();
 
         timer += Time.deltaTime;
-        
+
         //contain fil bar => is timer 
-        if(fillBar)
+        if (fillBar)
         {
             float displayValue = duration - timer;
             if (displayValue <= 0)
@@ -75,17 +82,29 @@ public class BasePopup : MonoBehaviour {
                 fillBar.fillAmount = 0f;
             }
             else
-            { 
+            {
                 text.text = ((int)displayValue).ToString();
                 fillBar.fillAmount = (float)(displayValue / duration);
             }
         }
-        if(duration != -1 && timer >= duration)
+        if (duration != -1 && timer >= duration)
         {
             timer = 0f;
-            FBPoolManager.instance.returnObjectToPool(this.gameObject,FBPoolManager.POOLTYPE.UI);
+            FBPoolManager.instance.returnObjectToPool(this.gameObject, FBPoolManager.POOLTYPE.UI);
         }
     }
 
-   
+    #region EventSystem
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        Player.instance.SetState(Player.PlayerState.Selecting);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        Player.instance.SetState(Player.PlayerState.None);
+    }
+    #endregion
+
+
 }

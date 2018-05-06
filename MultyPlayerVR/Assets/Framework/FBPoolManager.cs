@@ -90,14 +90,17 @@ public class FBPoolManager : MonoBehaviour
     public enum POOLTYPE
     {
         DEFAULT,
-        UI
+        UI,
+        PARTICLE
     }
 
 	public static FBPoolManager instance;
 	public List<ObjectPoolItem> itemsToPool;
     public List<ObjectPoolItem> uiToPool;
+    public List<ObjectPoolItem> particleToPool;
     Dictionary<string, ObjectPoolItem> dicItemsToPool = new Dictionary<string, ObjectPoolItem>();
     Dictionary<string, ObjectPoolItem> dicUIToPool = new Dictionary<string, ObjectPoolItem>();
+    Dictionary<string, ObjectPoolItem> dicParticleToPool = new Dictionary<string, ObjectPoolItem>();
     void Awake()
 	{
 		instance = this;
@@ -112,6 +115,12 @@ public class FBPoolManager : MonoBehaviour
         {
             item.init();
             dicUIToPool.Add(item.name, item);
+        }
+
+        foreach (ObjectPoolItem item in particleToPool)
+        {
+            item.init();
+            dicParticleToPool.Add(item.name, item);
         }
 
     }
@@ -130,7 +139,8 @@ public class FBPoolManager : MonoBehaviour
                
             case POOLTYPE.UI:
                 return dicUIToPool[name].getPoolObject();
-              
+            case POOLTYPE.PARTICLE:
+                return dicParticleToPool[name].getPoolObject();
             default:
                 break;
         }
@@ -157,7 +167,13 @@ public class FBPoolManager : MonoBehaviour
             if (dicUIToPool.TryGetValue(obj.name, out objectPoolItem))
                 return objectPoolItem.returnObjectToPool(obj);
         }
-		return false;
+
+        else if (type == POOLTYPE.PARTICLE)
+        {
+            if (dicParticleToPool.TryGetValue(obj.name, out objectPoolItem))
+                return objectPoolItem.returnObjectToPool(obj);
+        }
+        return false;
 	}
 
 	/// <summary>

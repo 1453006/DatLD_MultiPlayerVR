@@ -80,4 +80,9 @@ MonoBehaviour:
   - SendChangeAnim
   - SendAttachItemToHand
   - SendRemoveHandItem
+  - SendFakeCollectItem
+  - SendIncreaseQuestNum
+  - SendQuestObjectChangeStage
+  - SendIdleObject
+  - SendStartGame
   DisableAutoOpenWizard: 1

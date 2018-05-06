@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 33926239063264192}
   - component: {fileID: 23317948516430128}
   - component: {fileID: 114682106445372390}
+  - component: {fileID: 114574028698374258}
   m_Layer: 0
   m_Name: RiceBag
   m_TagString: Untagged
@@ -36,8 +37,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1540045698777728}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.5, y: 0, z: 2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -5.9048696, y: 0.39226705, z: -12.63862}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -81,6 +82,32 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1540045698777728}
   m_Mesh: {fileID: 4300000, guid: 30b557b262c93d8498a58ce6ef116151, type: 3}
+--- !u!114 &114574028698374258
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1540045698777728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ownerId: 0
+  group: 0
+  OwnerShipWasTransfered: 0
+  prefixBackup: -1
+  synchronization: 0
+  onSerializeTransformOption: 3
+  onSerializeRigidBodyOption: 2
+  ownershipTransfer: 0
+  ObservedComponents:
+  - {fileID: 0}
+  ObservedComponentsFoldoutOpen: 1
+  viewIdField: 0
+  instantiationId: -1
+  currentMasterID: -1
+  isRuntimeInstantiated: 0
 --- !u!114 &114682106445372390
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -14,12 +14,13 @@ public class GroupObjectManager : Photon.MonoBehaviour
     public TYPE groupType;
     public List<GameObject> listChildObj = new List<GameObject>();
 
+    public string receiveItemName = null;
     public float TimeReset;
     public float Range;
     // Use this for initialization
     void Start () {
         this.gameObject.addMissingComponent<PhotonView>();
-
+        InitItemData();
         InitChilds();
         switch (groupType)
         {
@@ -34,6 +35,16 @@ public class GroupObjectManager : Photon.MonoBehaviour
 
     }
 	
+    void InitItemData()
+    {
+        Item dataSrc = GroupGameDatabase.instance.getItemData(this.gameObject.name);
+        if (dataSrc && dataSrc.Id != -1)
+        {
+            //get prefab name of receive item => pool
+            int receviveItemId = dataSrc.ReceiveItemId;
+            receiveItemName  = GroupGameDatabase.instance.GetItemPrefabName(receviveItemId);
+        }
+    }
 	// Update is called once per frame
 	void Update () {
         switch (groupType)
@@ -58,8 +69,12 @@ public class GroupObjectManager : Photon.MonoBehaviour
             Rigidbody rb = tmp.addMissingComponent<Rigidbody>();
             rb.isKinematic = true;
             //Collider
-            if(groupType != TYPE.MOVEABLE)
-                tmp.addMissingComponent<BoxCollider>();
+            if (groupType != TYPE.MOVEABLE)
+            {
+               //MeshCollider mCollider =  tmp.addMissingComponent<MeshCollider>();
+               // mCollider.convex = true;
+               // mCollider.isTrigger = true;
+            }
             //script
             GroupObject script = tmp.addMissingComponent<GroupObject>();
             script.uID = i;
@@ -73,6 +88,12 @@ public class GroupObjectManager : Photon.MonoBehaviour
     public void OnDestroyObject(int uID)
     {
         photonView.RPC("DestroyObject", PhotonTargets.AllViaServer, uID);
+    }
+
+    public void OnUpdateHp(int uID, float atk)
+    {
+        CheckLocalAndReturnReward(uID, atk);
+        photonView.RPC("UpdateChildHP", PhotonTargets.AllViaServer, uID,atk);
     }
     #endregion
 
@@ -136,6 +157,20 @@ public class GroupObjectManager : Photon.MonoBehaviour
         float z = transform.position.z + Random.Range(-RANGE_MOVE, RANGE_MOVE);
         return new Vector3(x,y,z);
     }
+
+    void CheckLocalAndReturnReward(int uID,float atk)
+    {
+        GroupObject script = listChildObj[uID].GetComponent<GroupObject>();
+        if (script && (script.hp + atk <= 0))
+        {
+            //return reward here
+            GameObject obj = FBPoolManager.instance.getPoolObject(this.receiveItemName);
+            obj.transform.position = script.gameObject.transform.position;
+            obj.SetActive(true);
+            //do animation fly
+            FBUtils.DoAnimJumpOut(obj);
+        }
+    }
     #endregion
 
 
@@ -157,7 +192,10 @@ public class GroupObjectManager : Photon.MonoBehaviour
     {
         GroupObject script = listChildObj[uID].GetComponent<GroupObject>();
         if (script)
+        {
             script.hp += atk;
+            script.OnSetIdle();
+        }
     }
 
     [PunRPC]
@@ -173,6 +211,8 @@ public class GroupObjectManager : Photon.MonoBehaviour
         GroupObject script = listChildObj[childIndex].GetComponent<GroupObject>();
         script.ChangeAnim(action);
     }
+
+  
     #endregion
 
 }
