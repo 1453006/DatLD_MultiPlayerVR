@@ -205,7 +205,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 {
 
                     //check num of player
-                    if (PhotonNetwork.room.PlayerCount != 2)
+                    if (PhotonNetwork.room.PlayerCount != FBTextManager.NUM_START_PLAY)
                     {
                         PopupManager.ShowText("Waiting for another player", 3f);
                         return;
@@ -472,17 +472,20 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             //Player.instance.OnAttachItemToHand(this.transform);
             if (this.gameObject != null)
             {
-                this.gameObject.SetActive(false);
+                //snap to other pointer before delete
+                this.gameObject.transform.position = new Vector3(-100, -100, -100);
+                //this.gameObject.SetActive(false);
                 this.photonView.TransferOwnership(PhotonNetwork.player.ID);
                 PhotonNetwork.Destroy(this.gameObject);
-               
+                               
             }
          
-            //PhotonNetwork.Destroy(this.gameObject);
+            PhotonNetwork.Destroy(this.gameObject);
 
         }
     }
 
+   
     public void PickupAndAttach()
     {
         if (this.SentPickup)
@@ -495,7 +498,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         this.photonView.RPC("PunPickup", PhotonTargets.AllViaServer);
         PhotonView playerPhotonView = Player.instance.visualPlayer.GetPhotonView();
         Player.instance.isHandAttached = true;
-        playerPhotonView.RPC("SendAttachItemToHand", PhotonTargets.AllViaServer, this.gameObject.name, playerPhotonView.viewID);
+        string itemName = this.GetComponent<Item>().prefabName;
+        playerPhotonView.RPC("SendAttachItemToHand", PhotonTargets.AllViaServer, itemName, playerPhotonView.viewID);
         Player.instance.SetState(Player.PlayerState.None);
     }
 
@@ -834,7 +838,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         }
 
     }
-
+    
     void UpdateMelee()
     {
        

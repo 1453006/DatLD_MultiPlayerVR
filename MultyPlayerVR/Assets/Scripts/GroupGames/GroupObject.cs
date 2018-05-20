@@ -36,7 +36,8 @@ public class GroupObject : MonoBehaviour {
         {
             case STATE.ACTIVE:
                 {
-
+                    this.hp = 100f;
+                    FBUtils.DoAnimScaleUp(this.gameObject);
                 }
                 break;
             case STATE.DEACTIVE:

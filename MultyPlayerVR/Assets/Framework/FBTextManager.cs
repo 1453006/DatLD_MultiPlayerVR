@@ -4,7 +4,16 @@ using System.IO;
 
 public class FBTextManager : MonoBehaviour
 {
-	private Dictionary<string, string> vars = new Dictionary<string, string>();
+    #region Group game
+    public const string HIGHLIGHT_WEAPON_PREF = "Highlight_item";
+
+    #endregion
+
+    #region DUAL
+    public const string QUIT_GAME_MARKER = "quitgame_marker";
+    public const int NUM_START_PLAY = 1;
+    #endregion
+    private Dictionary<string, string> vars = new Dictionary<string, string>();
 
 	public string[] languageFileNames;
 	public static FBTextManager instance;
@@ -12,7 +21,7 @@ public class FBTextManager : MonoBehaviour
 	void Awake()
 	{
 		instance = this;
-		setCurrentLanguage(languageFileNames[0]);
+		//setCurrentLanguage(languageFileNames[0]);
 	}
 
 	/// <summary>

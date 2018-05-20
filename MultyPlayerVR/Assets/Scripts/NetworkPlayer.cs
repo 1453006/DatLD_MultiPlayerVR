@@ -160,6 +160,13 @@ public class NetworkPlayer : Photon.MonoBehaviour {
                 Debug.Log("this bject not in pool !!!!!");
                 return;
             }
+            //turn off highlight if have
+            Transform hl =go.transform.findChildRecursively(FBTextManager.HIGHLIGHT_WEAPON_PREF);
+            if(hl)
+            {
+                hl.gameObject.SetActive(false);
+            }
+
             Transform rightHand = view.gameObject.transform.findChildRecursively("Hand_Right_jnt");
             //reset old attached if have
             foreach (Transform child in rightHand.transform)

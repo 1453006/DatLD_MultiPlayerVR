@@ -8,7 +8,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/DualRoom.unity
     guid: 8ace4d0d2df70bc44a8cac2945e7b3da
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/LobbyRoom.unity
     guid: 73ec589caae6e394a8d77895a926b8ea
   - enabled: 1

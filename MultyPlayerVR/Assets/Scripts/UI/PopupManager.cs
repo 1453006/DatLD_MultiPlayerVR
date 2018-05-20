@@ -83,6 +83,21 @@ public class PopupManager : MonoBehaviour {
         return go;
     }
 
+    public static GameObject ShowDialogBelongObject(string dialogName, float duration, Transform obj,  string markerName, bool isFollow = true, bool _disableWhenMove = true)
+    {
+        GameObject go = FBPoolManager.instance.getPoolObject(dialogName, FBPoolManager.POOLTYPE.UI);
+        BasePopup baseScript = go.GetComponent<BasePopup>();
+        baseScript.SetValues(null, isFollow, duration);
+        Transform parentMarker = obj.transform.findChildRecursively(markerName);
+        go.transform.position = parentMarker.transform.position;
+        go.SetActive(true);
+        currentPopup = go;
+        disableWhenMove = _disableWhenMove;
+        playerPos = Player.instance.gameObject.transform.position;
+        showedPopup = true;
+        return go;
+    }
+
     public static GameObject ShowTimer(string dialogName, float duration, GameObject parentObj, bool isFollow = true)
     {
         GameObject go = FBPoolManager.instance.getPoolObject(dialogName, FBPoolManager.POOLTYPE.UI);

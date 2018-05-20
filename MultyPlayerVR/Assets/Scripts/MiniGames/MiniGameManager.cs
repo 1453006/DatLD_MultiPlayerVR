@@ -50,8 +50,8 @@ public class MiniGameManager : MonoBehaviour {
 		
         if(GvrController.AppButtonDown)
         {
-            if(PhotonNetwork.isMasterClient)
-                quitDialog = PopupManager.ShowDialog(quitDialog.name, -1);
+            if (PhotonNetwork.isMasterClient && currentGamePrefab != null)
+                quitDialog = PopupManager.ShowDialogBelongObject(quitDialog.name, -1, currentGamePrefab.transform, FBTextManager.QUIT_GAME_MARKER);
         }
 	}
 

@@ -8,6 +8,7 @@ public class GroupGames_NetManager:PunBehaviour {
 
     public GameObject avatarPrefabs;
     public GameObject[] listGroupObject;
+    public GameObject weaponDock;
     public GameObject[] listWeapon;
     public const string setting = "1.0";
 
@@ -103,10 +104,14 @@ public class GroupGames_NetManager:PunBehaviour {
             {
                 PhotonNetwork.Instantiate(obj.name, new Vector3(1,0,1), Quaternion.identity, 0);
             }
-
-            foreach (GameObject obj in listWeapon)
+            
+           for(int i =0;i< 4;i++)
             {
-                PhotonNetwork.Instantiate("GroupGame/"+obj.name, new Vector3(Random.Range(-1f,1f), 0.5f, Random.Range(-1f, 1f)), Quaternion.identity, 0);
+                if (listWeapon.Length <= i || listWeapon[i] == null)
+                    continue;
+                Vector3 pos = weaponDock.transform.findChildRecursively(i.ToString()).transform.position;
+                pos.y += 0.2f;
+                PhotonNetwork.Instantiate("GroupGame/"+ listWeapon[i].name, pos, Quaternion.identity, 0);
             }
         }
     }

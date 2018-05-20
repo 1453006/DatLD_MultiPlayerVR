@@ -144,6 +144,39 @@
       "prefabName": "Weapon_GUN01",
       "stackable": "1",
       "receiveItemId": "-1"
+    },
+    {
+      "id": 14,
+      "title": "Weapon_GUN02",
+      "itemId": "14",
+      "power": "20",
+      "description": "Weapon_GUN02",
+      "iconName": "Weapon_GUN02",
+      "prefabName": "Weapon_GUN02",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 15,
+      "title": "Weapon_SWORD01",
+      "itemId": "15",
+      "power": "10",
+      "description": "Weapon_SWORD01",
+      "iconName": "Weapon_SWORD01",
+      "prefabName": "Weapon_SWORD01",
+      "stackable": "1",
+      "receiveItemId": "-1"
+    },
+    {
+      "id": 16,
+      "title": "GroupWheat",
+      "itemId": "16",
+      "power": "0",
+      "description": "GroupWheat",
+      "iconName": "GroupWheat",
+      "prefabName": "GroupWheat",
+      "stackable": "-1",
+      "receiveItemId": "3"
     }
   ]
 }

@@ -457,7 +457,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         PhotonPlayer master = null;
         PhotonPlayer remote = null;
 
-        if (PhotonNetwork.connected && PhotonNetwork.room.PlayerCount == 1)
+        if (PhotonNetwork.connected && PhotonNetwork.room.PlayerCount == FBTextManager.NUM_START_PLAY)
         {
             master = PhotonNetwork.player;
             remote = null;

@@ -114,17 +114,46 @@ public static class FBUtils
     public static void DoAnimJumpOut(GameObject obj)
     {
         obj.addMissingComponent<BoxCollider>();
+        Transform highlight = obj.transform.findChildRecursively(FBTextManager.HIGHLIGHT_WEAPON_PREF);
 
-       
+        if (!highlight)
+        {
+            highlight = FBPoolManager.instance.getPoolObject(FBTextManager.HIGHLIGHT_WEAPON_PREF).transform;
+            if (highlight)
+            {
+                highlight.transform.SetParent(obj.transform);
+                highlight.transform.localPosition = Vector3.zero;
+            }
+        }
+        else
+            highlight.gameObject.SetActive(false);
+
         float x = obj.transform.position.x + UnityEngine.Random.Range(-5f, 5f);
         float z = obj.transform.position.z + UnityEngine.Random.Range(-5f,5f);
         float y = GetGroundYAxis(new Vector3(x, 100f, z));
-         obj.transform.DOJump(new Vector3(x, y, z), 4f, 1, 1f);
+        obj.transform.DOJump(new Vector3(x, y, z), 4f, 1, 1f).OnComplete(() =>
+        {
+            //turn on highlight item
+            if(highlight)
+            {
+                highlight.gameObject.SetActive(true);
+            }
+        });
         //obj.transform.localPosition = new Vector3(x, y, z);
 
     }
 
-   
+    public static void DoAnimScaleUp(GameObject obj)
+    {
+        
+        Vector3 targetScale =  obj.transform.localScale;
+        obj.transform.localScale /= 4f;
+        obj.SetActive(true);
+        obj.transform.DOScale(targetScale, 1f);
+
+    }
+
+
     public static float GetGroundYAxis(Vector3 fakePos)
     {
         RaycastHit hit = new RaycastHit();

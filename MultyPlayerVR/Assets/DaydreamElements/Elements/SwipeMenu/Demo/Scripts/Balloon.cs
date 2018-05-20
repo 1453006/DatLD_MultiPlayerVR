@@ -104,7 +104,7 @@ namespace DaydreamElements.SwipeMenu {
       float t = startTime - Time.realtimeSinceStartup;
       float w = (2 * Mathf.PI / FLOATING_PERIOD);
       float delta = Mathf.Sin(t * w) * FLOATING_AMPLITUDE;
-      textMesh.localPosition =  transform.localPosition = startPosition + Vector3.up * delta;
+      transform.localPosition = startPosition + Vector3.up * delta;
       
     }
 

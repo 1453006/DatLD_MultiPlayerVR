@@ -5,6 +5,7 @@ using UnityEngine;
 public class GroupObjectManager : Photon.MonoBehaviour
 {
     public const float RANGE_MOVE = 10f;
+    float timer = 0f;
     public enum TYPE
     {
         IDLE,
@@ -38,7 +39,7 @@ public class GroupObjectManager : Photon.MonoBehaviour
     void InitItemData()
     {
         Item dataSrc = GroupGameDatabase.instance.getItemData(this.gameObject.name);
-        if (dataSrc && dataSrc.Id != -1)
+        if (dataSrc.Id != -1)
         {
             //get prefab name of receive item => pool
             int receviveItemId = dataSrc.ReceiveItemId;
@@ -50,6 +51,7 @@ public class GroupObjectManager : Photon.MonoBehaviour
         switch (groupType)
         {
             case TYPE.IDLE:
+                UpdateIdle();
                 break;
             case TYPE.MOVEABLE:
                 UpdateMoveable();
@@ -85,6 +87,24 @@ public class GroupObjectManager : Photon.MonoBehaviour
     }
     #region IDLE
 
+    void UpdateIdle()
+    {
+        timer += Time.deltaTime;
+        if (timer >= TimeReset)
+        {
+            timer = 0f;
+            OnSendRefreshTree();
+        }
+    }
+
+    void OnSendRefreshTree()
+    {
+        if (!PhotonNetwork.isMasterClient)
+            return;
+    
+            photonView.RPC("SendSetActiveAll", PhotonTargets.AllBufferedViaServer);
+    }
+
     public void OnDestroyObject(int uID)
     {
         photonView.RPC("DestroyObject", PhotonTargets.AllViaServer, uID);
@@ -98,7 +118,7 @@ public class GroupObjectManager : Photon.MonoBehaviour
     #endregion
 
     #region Moveable
-    float timer = 0f;
+    
     void StartMoveable()
     {
         GenChildAction();
@@ -117,6 +137,8 @@ public class GroupObjectManager : Photon.MonoBehaviour
 
     void GenChildAction()
     {
+        if (!PhotonNetwork.isMasterClient)
+            return;
         for (int i = 0; i < listChildObj.Count; i++)
         {
             int actionNum = FBUtils.RandomEnumValue<GroupObject.ACTION>();
@@ -132,17 +154,16 @@ public class GroupObjectManager : Photon.MonoBehaviour
         {
             case GroupObject.ACTION.MOVE:
                 {
-                    SendMoveTo(GenNextPosition(),TimeReset/2f,childIndex);
+                    //SendMoveTo(GenNextPosition(),TimeReset/2f,childIndex);
+                    Vector3 p = GenNextPosition();
+                    photonView.RPC("SendMoveTo", PhotonTargets.AllViaServer, p.x, p.y, p.z, TimeReset / 2f, childIndex);
                 }
                 break;
             case GroupObject.ACTION.IDLE:
-                {
-                    SendChangeAnim(action,childIndex);
-                }
-                break;
             case GroupObject.ACTION.EAT:
                 {
-                    SendChangeAnim(action, childIndex);
+                    //SendChangeAnim(action, childIndex);
+                    photonView.RPC("SendChangeAnim", PhotonTargets.AllViaServer, action, childIndex);
                 }
                 break;
             default:
@@ -165,6 +186,8 @@ public class GroupObjectManager : Photon.MonoBehaviour
         {
             //return reward here
             GameObject obj = FBPoolManager.instance.getPoolObject(this.receiveItemName);
+            
+            
             obj.transform.position = script.gameObject.transform.position;
             obj.SetActive(true);
             //do animation fly
@@ -199,10 +222,10 @@ public class GroupObjectManager : Photon.MonoBehaviour
     }
 
     [PunRPC]
-    public void SendMoveTo(Vector3 pos, float duration,int childIndex)
+    public void SendMoveTo(float x, float y,float z, float duration,int childIndex)
     {
         GroupObject script = listChildObj[childIndex].GetComponent<GroupObject>();
-        script.MoveTo(pos,duration);
+        script.MoveTo(new Vector3(x,y,z),duration);
     }
 
     [PunRPC]
@@ -210,6 +233,19 @@ public class GroupObjectManager : Photon.MonoBehaviour
     {
         GroupObject script = listChildObj[childIndex].GetComponent<GroupObject>();
         script.ChangeAnim(action);
+    }
+
+    [PunRPC]
+    public void SendSetActiveAll()
+    {
+        for (int i = 0; i < listChildObj.Count; i++)
+        {
+            if(!listChildObj[i].GetActive())
+            {
+                listChildObj[i].GetComponent<GroupObject>().SetState(GroupObject.STATE.ACTIVE);
+               
+            }
+        }
     }
 
   

@@ -85,4 +85,5 @@ MonoBehaviour:
   - SendQuestObjectChangeStage
   - SendIdleObject
   - SendStartGame
+  - SendSetActiveAll
   DisableAutoOpenWizard: 1

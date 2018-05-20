@@ -156,7 +156,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4523615609344122}
-  - component: {fileID: 114141609002954814}
+  - component: {fileID: 114596373590479582}
   m_Layer: 0
   m_Name: NetManager
   m_TagString: Untagged
@@ -174,6 +174,9 @@ GameObject:
   - component: {fileID: 4677989176755598}
   - component: {fileID: 114167267787721834}
   - component: {fileID: 114987853858880148}
+  - component: {fileID: 114665836449440616}
+  - component: {fileID: 114904768513444074}
+  - component: {fileID: 114242216185314752}
   m_Layer: 0
   m_Name: GamePlay
   m_TagString: Untagged
@@ -329,21 +332,6 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
---- !u!114 &114141609002954814
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1590426304342646}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4a8074ff75450440831f6a11130d74d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  avatarPrefabs: {fileID: 1340722146096514, guid: b04687fd6b5c6494fa227a31b6a046ce,
-    type: 2}
-  interactiveObjectPrefabs: {fileID: 1085319993198420, guid: e35ef00aa1a877141a341dee4f21537e,
-    type: 2}
 --- !u!114 &114167267787721834
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -356,7 +344,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   VRplayer: {fileID: 0}
-  spawnPoint: {x: 0, y: 0, z: 0}
+  spawnPoint: {x: 0, y: 1.5, z: 0}
   status: {fileID: 0}
 --- !u!114 &114208294326232566
 MonoBehaviour:
@@ -373,6 +361,17 @@ MonoBehaviour:
   scrollInput:
     inertia: 1
     decelerationRate: 0.05
+--- !u!114 &114242216185314752
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1804094045192640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecb5cf8712798f44c9782fcbe011a972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114374765700745020
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -496,6 +495,29 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: FPS
+--- !u!114 &114596373590479582
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1590426304342646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a2faa835c3eeac4899832e0abf45094, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  avatarPrefabs: {fileID: 1340722146096514, guid: b04687fd6b5c6494fa227a31b6a046ce,
+    type: 2}
+  listGroupObject: []
+  weaponDock: {fileID: 0}
+  listWeapon:
+  - {fileID: 1551741038263828, guid: e9c89a89c7d9e91458e01e4d9908921c, type: 2}
+  - {fileID: 1708835795371528, guid: 1b0a6712032926c458f2921433fe0286, type: 2}
+  - {fileID: 1612665041628374, guid: a35f265b5c98af44a93136ca2e23e7bb, type: 2}
+  - {fileID: 1497638298851072, guid: 7f23a97e45c4f3f408897e8375faa0be, type: 2}
+  inventoryUI: {fileID: 1789461554907602, guid: 20a6539afd84ec34483054e09df93ce4,
+    type: 2}
+  startTime: 0
 --- !u!114 &114626598202865354
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -592,6 +614,31 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114665836449440616
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1804094045192640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6200e60ccd1c4f4b8d5b3d8814ba8b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &114904768513444074
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1804094045192640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 876c1d7b42518c5439cb80d479cf563a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  listAudio:
+  - {fileID: 8300000, guid: ee7818cd7804642e9a61c81b503ebd06, type: 3}
+  - {fileID: 8300000, guid: bf832f11ebcb14f86b4ae180103f0206, type: 3}
 --- !u!114 &114987853858880148
 MonoBehaviour:
   m_ObjectHideFlags: 1
