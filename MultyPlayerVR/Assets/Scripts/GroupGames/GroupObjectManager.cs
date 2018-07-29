@@ -12,7 +12,16 @@ public class GroupObjectManager : Photon.MonoBehaviour
         MOVEABLE
     };
 
+    public enum Species
+    {
+        RABBIT,
+        TREE,
+        WHEAT
+    }
+
+
     public TYPE groupType;
+    public Species species;
     public List<GameObject> listChildObj = new List<GameObject>();
 
     public string receiveItemName = null;

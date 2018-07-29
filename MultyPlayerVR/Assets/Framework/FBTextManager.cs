@@ -6,7 +6,11 @@ public class FBTextManager : MonoBehaviour
 {
     #region Group game
     public const string HIGHLIGHT_WEAPON_PREF = "Highlight_item";
+    public const string SAVE_ITEM_PATH = "savelistdata_";
+    public const string FINISH_GAME_PARTICLE = "FinishGameParticle";
 
+    public const string LOADING_CIRCLE = "LoadCircle";
+    public const string POPUP_JOINROM = "Lobby_JoinRoom";
     #endregion
 
     #region DUAL

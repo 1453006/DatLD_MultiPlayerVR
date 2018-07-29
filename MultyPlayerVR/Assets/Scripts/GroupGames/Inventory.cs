@@ -3,6 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[SerializeField]
+public class InventorySaveItem
+{
+    public InventorySaveItem(int id, long quantity)
+    {
+        this.id = id;
+        this.quantity = quantity;
+    }
+    public int id;
+    public long quantity;
+}
+
 public class Inventory : MonoBehaviour {
 
     public GameObject inventorySlot;
@@ -26,7 +38,8 @@ public class Inventory : MonoBehaviour {
     }
     // Use this for initialization
     void Start () {
-   
+
+      
         Transform slotPanel = this.transform.findChildRecursively("SlotPanel");
         for (int i = 0; i < SLOT_MAX; i++)
         {
@@ -40,30 +53,51 @@ public class Inventory : MonoBehaviour {
             slot.transform.localPosition = Vector3.zero;
         }
 
-       
-        AddItem(1,3);
-        AddItem(2,5);
-        AddItem(3,10);
 
-        SaveInventory();
+        AddItem(1, 10);
+        AddItem(2, 10);
+        AddItem(3, 10);
+        AddItem(7, 10);
+        AddItem(8, 10);
+
+        //SaveInventory();
+
+
 
 
     }
 
-    void SaveInventory()
+    public void SaveInventory()
     {
-        string saveData = JsonHelper.arrayToJson<ItemData>(listData.ToArray());
+        //string filename = FBTextManager.SAVE_ITEM_PATH + PhotonNetwork.room.Name + ".dat";
+        //FBUtils.SaveListToFile<ListItemSaveData>(new ListItemSaveData { list = generateSaveData(listData) }, filename);
+    }
 
+    public List<ItemSaveData> generateSaveData(List<ItemData> data)
+    {
+        List<ItemSaveData> result = new List<ItemSaveData>();
+        foreach(var d in data)
+        {
+            result.Add(new ItemSaveData { amount = d.amount, itemId = d.itemId });
+        }
 
-        Debug.Log("<color=yellow> mydata  is" + saveData + " </color>");
-
-        
+        return result;
     }
 	
 	// Update is called once per frame
 	void Update () {
 		
 	}
+
+    public void LoadInventory()
+    {
+        string filename = FBTextManager.SAVE_ITEM_PATH + PhotonNetwork.room.Name + ".dat";
+        var listSaved = FBUtils.ParseListFromFile<ListItemSaveData>(filename);
+        foreach (var item in listSaved.list)
+        {
+            AddItem(item.itemId, (int)item.amount);
+        }
+    }
 
     void UpdateDisplay()
     {

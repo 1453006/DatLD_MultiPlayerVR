@@ -63,6 +63,7 @@ public class GroupObject : MonoBehaviour {
 
         if (hp <= 0)
         {
+            PlayDieFX();
             SetState(STATE.DEACTIVE);
         }
 
@@ -73,6 +74,7 @@ public class GroupObject : MonoBehaviour {
     public void UpdateHP(float atk)
     {
         // hp += atk;
+        FBParticleManager.PlayEffect(FBParticleManager.HIT_ANIMAL, 2, transform.position);
         parent.OnUpdateHp(uID, atk);
         if (hp <= 0)
         {
@@ -141,6 +143,30 @@ public class GroupObject : MonoBehaviour {
                 break;
             default:
                 break;
+        }
+    }
+
+    private void PlayDieFX()
+    {
+        GameObject fx = null;
+        switch (parent.species)
+        {
+            case GroupObjectManager.Species.RABBIT:
+                  fx = FBParticleManager.GetEffect("rabbit_disable",2);
+                break;
+            case GroupObjectManager.Species.TREE:
+                fx = FBParticleManager.GetEffect("tree_disable",2);
+                break;
+            case GroupObjectManager.Species.WHEAT:
+                fx = FBParticleManager.GetEffect("tree_disable", 2);
+                break;
+            default:
+                break;
+        }
+        if (fx)
+        {
+            fx.transform.position = this.transform.position;
+            fx.SetActive(true);
         }
     }
 

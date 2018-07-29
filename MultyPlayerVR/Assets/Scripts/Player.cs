@@ -5,6 +5,7 @@ using DG.Tweening;
 
 public class Player : MonoBehaviour {
 
+    public LoadCirclePointer loadcircle;
 #region CONFIG
     public float playerHeight = 1.8f;
     #endregion
@@ -14,6 +15,7 @@ public class Player : MonoBehaviour {
     {
         Vector3 correctPos = new Vector3(pos.x, pos.y + playerHeight, pos.z);
         this.transform.DOMove(correctPos, 1f);
+        
         this.transform.rotation = rot;
         if (visualPlayer)
         {
@@ -42,6 +44,8 @@ public class Player : MonoBehaviour {
     public NetworkPlayer networkPlayer;
     //This for swipe actions
     public GameObject swipeControllerGO;
+
+    public Transform currentPointerGO;
  
 
 
@@ -145,6 +149,8 @@ public class Player : MonoBehaviour {
             isSendSwipe = true;
             currentHandItem.transform.SetParent(null);
             Vector3 endPos = teleportController.selectionResult.selection;
+            if (currentPointerGO)
+                endPos = currentPointerGO.position;
             Quaternion endRot = currentHandItem.transform.rotation;
             GameObject newItem = PhotonNetwork.Instantiate("GroupGame/"+currentHandItem.gameObject.name, endPos, endRot, 0);
 
@@ -271,6 +277,12 @@ public class Player : MonoBehaviour {
        
 
 
+    }
+
+    public void OnBackToLobby()
+    {
+        PhotonNetwork.LeaveRoom();
+        PhotonNetwork.LoadLevel("LobbyRoom");
     }
 
  }

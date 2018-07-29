@@ -6,11 +6,13 @@ public class Quest
 {
     public QuestData questData { get; set; }
     public int process;
+    public bool isFinished;
    
     public Quest(QuestData data)
     {
         this.questData = data;
         this.process = 0;
+        this.isFinished = false;
     }
 }
 
@@ -39,7 +41,7 @@ public class QuestManager : Photon.MonoBehaviour{
         LoadListQuest();
         InitQuestObject();
        
-        questBoard.UpdateListQuest(listQuest);
+       // questBoard.UpdateListQuest(listQuest);
     }
 
     void mineOnJoinedRoom()
@@ -68,7 +70,7 @@ public class QuestManager : Photon.MonoBehaviour{
             q.process = (int) _process;
 
             //update GUI
-            questBoard.UpdateSubQuestText(q);
+           // questBoard.UpdateSubQuestText(q);
 
             //update Object
             UpdateTutorialObject(q.questData.mainQuestId, q.questData.subQuestId, (int)_process);
@@ -254,6 +256,16 @@ public class QuestManager : Photon.MonoBehaviour{
 
     }
 
+    bool isFinishAllQuest()
+    {
+        foreach (var q in listQuest)
+            if (!q.isFinished)
+                return false;
+        return true;
+    }
+
+  
+
     #region RPC
     [PunRPC]
     void SendIncreaseQuestNum(int questIndex, int num)
@@ -269,7 +281,7 @@ public class QuestManager : Photon.MonoBehaviour{
                 q.process = val;
 
                 //update GUI
-                questBoard.UpdateSubQuestText(q);
+               // questBoard.UpdateSubQuestText(q);
 
                 //update Object
                 UpdateTutorialObject(q.questData.mainQuestId, q.questData.subQuestId, val);
@@ -279,7 +291,12 @@ public class QuestManager : Photon.MonoBehaviour{
                     UpdateQuestProps(q, val);
 
                 if (val >= q.questData.requireNum)
+                {
+                    q.isFinished = true;
                     SendQuestObjectChangeStage(questIndex);
+                    if (isFinishAllQuest())
+                        photonView.RPC("SendFinishGame", PhotonTargets.AllViaServer);
+                }
             }
 
         }
@@ -321,6 +338,18 @@ public class QuestManager : Photon.MonoBehaviour{
         this.timeStart = timeStamp;
 
     }
+
+    [PunRPC]
+    void SendFinishGame()
+    {
+       GameObject go =  FBPoolManager.instance.getPoolObject(FBTextManager.FINISH_GAME_PARTICLE);
+       if(go)
+        {
+            go.transform.position = Vector3.zero;
+            go.SetActive(true);
+        }
+    }
+
     #endregion
 
 

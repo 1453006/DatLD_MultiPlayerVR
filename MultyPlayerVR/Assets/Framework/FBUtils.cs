@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using DG.Tweening;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public static class FBUtils
 {
@@ -165,6 +167,40 @@ public static class FBUtils
         }
        
         return -1;
+    }
+    
+    public static void SaveListToFile<T>(T data,string filename)
+    {
+        string destination = Application.persistentDataPath + filename;
+        FileStream file;
+
+        if (File.Exists(destination)) file = File.OpenWrite(destination);
+        else file = File.Create(destination);
+
+       
+        BinaryFormatter bf = new BinaryFormatter();
+        bf.Serialize(file, data);
+        file.Close();
+    }
+
+    public static T ParseListFromFile<T>(string filename)
+    {
+        string destination = Application.persistentDataPath + filename;
+        FileStream file;
+
+        if (File.Exists(destination)) file = File.OpenRead(destination);
+        else
+        {
+            Debug.LogError("File not found");
+            return default(T);
+        }
+
+        BinaryFormatter bf = new BinaryFormatter();
+
+        T result = (T)bf.Deserialize(file);
+        file.Close();
+
+        return result;
     }
     #region need review
 

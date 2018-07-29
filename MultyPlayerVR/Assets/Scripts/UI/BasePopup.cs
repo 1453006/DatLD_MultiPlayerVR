@@ -19,6 +19,9 @@ public class BasePopup : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public delegate void OnCompleteTimer();
     public event OnCompleteTimer eventCompleteTimer;
 
+    public delegate void OnShowPopupCompleted();
+    public event OnShowPopupCompleted eventShowPopupCompleted;
+
     //end for timer
 
     private void Awake()
@@ -90,6 +93,8 @@ public class BasePopup : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         if (duration != -1 && timer >= duration)
         {
             timer = 0f;
+            if (eventShowPopupCompleted != null)
+                eventShowPopupCompleted.Invoke();
             FBPoolManager.instance.returnObjectToPool(this.gameObject, FBPoolManager.POOLTYPE.UI);
         }
     }

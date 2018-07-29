@@ -45,7 +45,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         WEAPON_GUN,
         WEAPON_GUN_BULLET,
         SwitchRoomBtn,
-        QuestObject
+        QuestObject,
+        GoToLobbyBtn
         
     };
 
@@ -162,7 +163,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         if (type == TYPE.CombinableObj && thisItemData.Stackable == -1||
             type == TYPE.QuestObject)
         {
-            Player.instance.teleportController.selectionResult.selection = this.transform.position;
+            Player.instance.currentPointerGO = this.transform;
         }
         if(Player.instance.currentState != Player.PlayerState.PlayingGame &&
             Player.instance.isHandAttached == false)
@@ -172,11 +173,17 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     {
         if (Player.instance.currentState != Player.PlayerState.PlayingGame)
             Player.instance.SetState(Player.PlayerState.None);
+
+        if (type == TYPE.CombinableObj && thisItemData.Stackable == -1 ||
+           type == TYPE.QuestObject)
+        {
+            Player.instance.currentPointerGO = null;
+        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-       
+        FBSoundManager.Play(FBSoundManager.HIT_SOFT);
         switch (type)
         {
             case TYPE.MathButton:
@@ -220,6 +227,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                     {
 
                         MiniGameManager.instance.currentGamePrefab = PhotonNetwork.Instantiate(extentGO.name, extentTransform.position, extentTransform.rotation, 0);
+                        this.gameObject.SetActive(false);
                       
                     }
 
@@ -251,6 +259,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             case TYPE.SwitchRoomBtn:
                 {
                     OnSwitchRoomBtnClicked();
+                    break;
+                }
+            case TYPE.GoToLobbyBtn:
+                {
+                    OnGoToLobby();
                     break;
                 }
 
@@ -374,6 +387,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                 InitWeaponMelee();
                 break;
             case TYPE.MathGun:
+                StartMathGun();
                 break;
             case TYPE.MathBullet:
                 break;
@@ -387,6 +401,42 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
                
                 break;
 
+            default:
+                break;
+        }
+    }
+
+    private void OnDisable()
+    {
+        switch (type)
+        {
+            case TYPE.Striker:
+                break;
+            case TYPE.Ball:
+                break;
+            case TYPE.MathButton:
+                break;
+            case TYPE.SwitchGameBtn:
+                break;
+            case TYPE.WEAPON_MELEE:
+                break;
+            case TYPE.MathGun:
+                DisableMathGun();
+                break;
+            case TYPE.MathBullet:
+                break;
+            case TYPE.MathBallon:
+                break;
+            case TYPE.CombinableObj:
+                break;
+            case TYPE.WEAPON_GUN:
+                break;
+            case TYPE.WEAPON_GUN_BULLET:
+                break;
+            case TYPE.SwitchRoomBtn:
+                break;
+            case TYPE.QuestObject:
+                break;
             default:
                 break;
         }
@@ -592,6 +642,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     void OnTriggerEnterBall(Collider other)
     {
+        
         //check area
         if (other.gameObject == HockeyGame.instance.validArea[0].gameObject ||
             other.gameObject == HockeyGame.instance.validArea[1].gameObject ||
@@ -600,12 +651,14 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         //check is goal
         if (other.gameObject == HockeyGame.instance.goals[0].gameObject)
         {
+            FBSoundManager.Play(FBSoundManager.COMBINE_SOUND);
             HockeyGame.instance.photonView.RPC("AddScore2Players", PhotonTargets.AllViaServer, 1, 1);
             //OnBallRestart();
             return;
         }
         else if (other.gameObject == HockeyGame.instance.goals[1].gameObject)
         {
+            FBSoundManager.Play(FBSoundManager.COMBINE_SOUND);
             HockeyGame.instance.photonView.RPC("AddScore2Players", PhotonTargets.AllViaServer, 1, 0);
             //OnBallRestart();
             return;
@@ -651,6 +704,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
         if (other.gameObject.name.Contains("Striker"))
         {
+            FBSoundManager.Play(FBSoundManager.BALL_BOUNCE);
             currentSpeed = (currentSpeed >= 2 * speed) ? 2 * speed : currentSpeed *= 1.7f;
             if (other.GetComponent<PhotonView>().isMine)
             {
@@ -690,6 +744,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             direct.y = 0;
             ray = new Ray(contact, direct);
             Debug.Log("EDGE HIT IS" + ray.origin + "-"+ ray.direction);
+            FBSoundManager.Play(FBSoundManager.BALL_BOUNCE);
             //if(ray.direction.z == 1 || ray.direction.z == -1 || ray.direction.z == 0)
             //{
             //    float z = ray.direction.z;
@@ -849,6 +904,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         GroupObject obj = other.GetComponent<GroupObject>();
         if(obj && obj.tag == "tree")
         {
+            FBParticleManager.PlayEffect(FBParticleManager.HIT_ANIMAL, 2,other.ClosestPoint(this.transform.position) );
+            FBSoundManager.Play(FBSoundManager.HIT_SOFT);
             obj.UpdateHP(-AXE_DAMAGE);
         }
     }
@@ -857,42 +914,77 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     /// BEGIN MATH GAME
 
     #region MathGun
-    private const float BULLETSTRENGTH = 20.0f;
+    private const float BULLETSTRENGTH = 40f;
+    private bool canshoot = true;
+   
     void StartMathGun()
     {
-        
+        Player.instance.swipeControllerGO.GetComponent<SwipeController>().OnSwipeSelect += OnSwipeUp;
     }
 
-   
+    void DisableMathGun()
+    {
+        //Player.instance.swipeControllerGO.GetComponent<SwipeController>().OnSwipeSelect -= OnSwipeUp;
+    }
+
+    private void OnSwipeUp(SwipeAngle index)
+    {
+        switch (index)
+        {
+            case SwipeAngle.TOP:
+                {
+                   if(canshoot)
+                       Shoot();
+                }
+                break;
+            case SwipeAngle.RIGHT:
+                break;
+            case SwipeAngle.DOWN:
+                break;
+            case SwipeAngle.LEFT:
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void Shoot()
+    {
+        //shoot
+        GameObject bullet = FBPoolManager.instance.getPoolObject("Math_Gun_BULLET");
+        if (bullet)
+        {
+            Transform shootMarker = transform.findChildRecursively("shoot_marker");
+            if (shootMarker)
+                bullet.transform.position = shootMarker.position;
+            else
+                bullet.transform.position = transform.position;
+
+            bullet.transform.rotation = transform.rotation;
+
+            Rigidbody rb = bullet.addMissingComponent<Rigidbody>();
+            ObjectInGame script = bullet.addMissingComponent<ObjectInGame>();
+            script.type = TYPE.MathBullet;
+
+            rb.velocity = Vector3.zero; //reset force 
+            bullet.SetActive(true);
+            rb.AddForce(transform.forward * BULLETSTRENGTH, ForceMode.Impulse);
+
+            canshoot = false;
+
+        }
+    }
+
     void UpdateMathGun()
     {
         if (!photonView.isMine)
             return;
 
-        if (GvrControllerInput.ClickButtonUp)
+        timer += Time.deltaTime;
+        if (timer >= 1f)
         {
-            //shoot
-            GameObject bullet = FBPoolManager.instance.getPoolObject("Math_Gun_BULLET");
-            if (bullet)
-            {
-                Transform shootMarker = transform.findChildRecursively("shoot_marker");
-                if(shootMarker)
-                    bullet.transform.position = shootMarker.position;
-                else
-                    bullet.transform.position = transform.position;
-
-                bullet.transform.rotation = transform.rotation;
-
-                Rigidbody rb = bullet.addMissingComponent<Rigidbody>();
-                ObjectInGame script = bullet.addMissingComponent<ObjectInGame>();
-                script.type = TYPE.MathBullet;
-
-                rb.velocity = Vector3.zero; //reset force 
-                bullet.SetActive(true);
-                rb.AddForce(transform.forward * BULLETSTRENGTH, ForceMode.Impulse);
-
-
-            }
+            timer = 0;
+            canshoot = true;
         }
     }
     #endregion
@@ -917,7 +1009,8 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             string answer = other.GetComponentInChildren<TextMesh>().text.Trim();
             int number = int.Parse(answer);
             MathGame.instance.MakeTurn(number);
-
+            FBParticleManager.PlayEffect("hit_animal",1f,other.transform.position);
+            FBSoundManager.Play(FBSoundManager.POP);
             other.gameObject.SetActive(false);
         }
     }
@@ -927,6 +1020,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     private Item thisItemData = null;
     private string finalObjectName = "";
     private Vector3 itemDockPos;
+    public bool isBusy = false;
   
     /// <summary>
     /// update inventory for THIS GAME OBJECT
@@ -974,8 +1068,13 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         if (thisItemData == null || thisItemData.Stackable == -1)
             return;
         ObjectInGame obj = other.GetComponent<ObjectInGame>();
-        if(obj && obj.isCombinableObject())
+        
+        if(obj && obj.isCombinableObject() && !other.gameObject.GetPhotonView())
         {
+            if (this.isBusy || obj.isBusy)
+            {
+                return;
+            }
             Item thisData = this.gameObject.GetComponent<Item>();
             Item otherData = other.gameObject.GetComponent<Item>();
             CombinationMap map = GroupGameDatabase.instance.getCombinationMapById(thisData.Id);
@@ -983,11 +1082,11 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             {
                 if(map.ItemId01 == thisData.Id && map.ItemId02 == otherData.Id)
                 {
-                    OnCombineObject(map,this.gameObject,other.gameObject);
+                    OnCombineObject(map,this.gameObject,other.gameObject,obj);
                 }
                 else if(map.ItemId01 == otherData.Id && map.ItemId02 == thisData.Id)
                 {
-                    OnCombineObject(map,other.gameObject,this.gameObject);
+                    OnCombineObject(map,other.gameObject,this.gameObject,this);
                 }
                 else
                 {
@@ -997,18 +1096,28 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         }
     }
 
-    void OnCombineObject(CombinationMap map, GameObject item01, GameObject itemDock)
+    bool isDockItem(int id)
     {
-    
+        CombinationMap map = GroupGameDatabase.instance.getCombinationMapById(id);
+        if (id == map.ItemId02)
+            return true;
+        return false;
+    }
+    void OnCombineObject(CombinationMap map, GameObject item01, GameObject itemDock, ObjectInGame dockManager)
+    {
+        dockManager.isBusy = true;
         FBPoolManager.instance.returnObjectToPool(item01);
         int itemFinal = map.ItemIdFinal;
         Item finalObj = GroupGameDatabase.instance.GetItemByID(itemFinal);
 
         this.itemDockPos = itemDock.transform.position;
-        this.finalObjectName = finalObj.prefabName;
+        dockManager.finalObjectName = finalObj.prefabName;
         //display timer
+        FBParticleManager.PlayEffect(FBParticleManager.EFFECT_COMBINE_OBJECT,2,itemDockPos);
+        FBSoundManager.Play(FBSoundManager.COMBINE_SOUND);
         GameObject timerDialog = PopupManager.ShowTimer("Group_Timer", map.Duration, itemDock);
-        timerDialog.GetComponent<BasePopup>().eventCompleteTimer += ObjectInGame_eventCompleteTimer;
+        timerDialog.GetComponent<BasePopup>().eventCompleteTimer += dockManager.ObjectInGame_eventCompleteTimer;
+            
 
         //fake collect display for another player 
         PhotonView playerPhotonView = Player.instance.visualPlayer.GetPhotonView();
@@ -1017,8 +1126,9 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     private void ObjectInGame_eventCompleteTimer()
     {
+        this.isBusy = false;
         GameObject obj = FBPoolManager.instance.getPoolObject(this.finalObjectName);
-        obj.transform.position = this.itemDockPos;
+        obj.transform.position = this.transform.position;
         obj.SetActive(true);
         //do animation fly
         FBUtils.DoAnimJumpOut(obj);
@@ -1090,7 +1200,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
         GroupObject obj = other.GetComponent<GroupObject>();
         if (obj && obj.tag == "animal")
         {
-            
+            FBSoundManager.Play(FBSoundManager.HIT_SOFT);
             obj.UpdateHP(-BULLET_DAMAGE);
         }
         else if(obj)
@@ -1105,7 +1215,14 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
     
     void OnSwitchRoomBtnClicked()
     {
-        LobbyNetmanager.instance.CreateOrJoinRoom(extentData.Trim());
+
+        LobbyNetmanager.instance.CreateOrJoinRoom(extentData.ToString(), transform);
+
+    }
+
+    void OnGoToLobby()
+    {
+        GameObject dialog = PopupManager.ShowDialogBelongObject("GoToLobby", -1,extentGO.transform,"door_marker");
     }
     #endregion
 
@@ -1130,30 +1247,34 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
 
     void OnTriggerEnterQuestObject(Collider other)
     {
-       
         //update quest process data
         ObjectInGame obj = other.GetComponent<ObjectInGame>();
-        if (obj && obj.isCombinableObject())
+        Transform pos = this.transform.findChildRecursively("wrong_marker");
+        if (obj && obj.isCombinableObject() && other.gameObject.GetPhotonView().viewID == 0)
         {
             SendTriggerQuestItem = true;
             other.gameObject.SetActive(false);
             Item otherData = other.gameObject.GetComponent<Item>();
             QuestData q = listQuestData.Find(x => x.requireItemId == otherData.Id);
-            if(q != null && !QuestManager.instance.isFinishQuest(q))
+            if (q != null && !QuestManager.instance.isFinishQuest(q))
             {
                 FBPoolManager.instance.returnObjectToPool(other.gameObject);
                 QuestManager.instance.UpdateQuestProcess(q, +1);
+                FBParticleManager.PlayEffect(FBParticleManager.EFFECT_COMBINE_OBJECT, 2, pos ? pos.position : this.transform.position);
+                FBSoundManager.Play(FBSoundManager.COMBINE_SOUND);
                 Invoke("ResetSendTrigger", 2f);
             }
             else
             {
-                Transform pos = this.transform.findChildRecursively("wrong_marker");
-                if(pos)
+
+                if (pos)
                     PopupManager.ShowWrongSignal(pos.position);
                 else
                     PopupManager.ShowWrongSignal(this.transform.position);
             }
         }
+        else
+            FBPoolManager.instance.returnObjectToPool(other.gameObject);
        
       
     }
@@ -1166,6 +1287,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
    
     public void OnFinishQuest(int mainQuestId, int subQuestId, bool createNewPref = false)
     {
+        FBSoundManager.Play(FBSoundManager.FINISH_SOUND);
         if (createNewPref)
         {
            
@@ -1192,6 +1314,7 @@ public class ObjectInGame : Photon.MonoBehaviour,IPointerClickHandler,IPointerEn
             if (rewardChild)
             {
                 //play anim here
+               
                 rewardChild.gameObject.SetActive(true);
             }
         }

@@ -35,7 +35,7 @@ public class LobbyNetmanager : MonoBehaviour{
     {
         PhotonNetwork.ConnectUsingSettings(setting);
         var temp = PhotonVoiceNetwork.Client;
-
+        FBSoundManager.PlayMusic("lobby_theme");
         OnInitPlayerOffline();
     }
 
@@ -88,25 +88,21 @@ public class LobbyNetmanager : MonoBehaviour{
 
     }
 
-    public void CreateOrJoinRoom(string type)
+    public void CreateOrJoinRoom(string type,Transform parent)
     {
        if(type == "group")
         {
             if (currentGroupRoom == null)
             {
-                GameObject dialog = PopupManager.ShowDialog(dialogCreateNewRoom.name, -1);
+                GameObject dialog = PopupManager.ShowDialogBelongObject(dialogCreateNewRoom.name, -1,parent,"popup_marker");
                 dialog.SetActive(false);
                 Transform btnOkay = dialog.transform.findChildRecursively("BtnYES");
-                Transform btnNo = dialog.transform.findChildRecursively("BtnNO");
                 if (btnOkay)
                 {
-                    btnOkay.GetComponent<Button>().onClick.AddListener(delegate { OnCreateNewRoom("group"); });
+                    btnOkay.GetComponent<Button>().onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);
+                    btnOkay.GetComponent<Button>().onClick.AddListener(() => OnCreateNewRoom("group"));
                 }
-                if(btnNo)
-                {
-                    btnNo.GetComponent<Button>().onClick.AddListener(delegate { OnDisableDialog(dialog); });
-                }
-
+               
                 dialog.SetActive(true);
                 return;
             }
@@ -121,15 +117,13 @@ public class LobbyNetmanager : MonoBehaviour{
                 GameObject dialog = PopupManager.ShowDialog(dialogCreateNewRoom.name, -1);
                 dialog.SetActive(false);
                 Transform btnOkay = dialog.transform.findChildRecursively("BtnYES");
-                Transform btnNo = dialog.transform.findChildRecursively("BtnNO");
+              
                 if (btnOkay)
                 {
-                    btnOkay.GetComponent<Button>().onClick.AddListener(delegate { OnCreateNewRoom("dual"); });
+                    btnOkay.GetComponent<Button>().onClick.SetPersistentListenerState(0, UnityEngine.Events.UnityEventCallState.Off);
+                    btnOkay.GetComponent<Button>().onClick.AddListener(() => OnCreateNewRoom("dual"));
                 }
-                if (btnNo)
-                {
-                    btnNo.GetComponent<Button>().onClick.AddListener(delegate { OnDisableDialog(dialog); });
-                }
+               
                 dialog.SetActive(true);
                 return;
             }
@@ -138,7 +132,7 @@ public class LobbyNetmanager : MonoBehaviour{
         }
     }
 
-    void OnCreateNewRoom(string type)
+    public void OnCreateNewRoom(string type)
     {
         string newRoomName;
         int index = 0;
@@ -146,21 +140,41 @@ public class LobbyNetmanager : MonoBehaviour{
         string levelName = "";
         if (type == "group")
         {
-            index = listGroupData.Count + 1;
             numPlayer = 4;
             levelName = "GroupRoom";
+
+            index = listGroupData.Count + 1;
+
+            for(int i =0;i< listGroupData.Count;i++)
+            {
+                if(listGroupData[i].PlayerCount < numPlayer)
+                {
+                    index = i;
+                }
+            }
+
+
         }
         else if (type == "dual")
         {
             index = listDualData.Count + 1;
             numPlayer = 2;
             levelName = "DualRoom";
+
+            for (int i = 0; i < listDualData.Count; i++)
+            {
+                if (listDualData[i].PlayerCount < numPlayer)
+                {
+                    index = i;
+                }
+            }
         }
         newRoomName = type + index;
         PopupManager.DisableCurrentDialog();
-        if ( PhotonNetwork.CreateRoom(newRoomName, new RoomOptions() { IsVisible = true,IsOpen = true, MaxPlayers = numPlayer }, null))
+        if ( PhotonNetwork.JoinOrCreateRoom(newRoomName, new RoomOptions() { IsVisible = true,IsOpen = true, MaxPlayers = numPlayer }, null))
         {
             Debug.Log("Send create new room successfully");
+            FBPoolManager.instance.returnAllObjectsToPool();
             PhotonNetwork.LeaveRoom();
             PhotonNetwork.LoadLevel(levelName);
         }

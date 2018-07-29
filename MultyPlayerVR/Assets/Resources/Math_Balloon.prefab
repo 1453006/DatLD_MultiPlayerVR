@@ -305,12 +305,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   extentData: 
-  extentGO: {fileID: 0}
+  extentGO: {fileID: 1257887799069152}
   extentTransform: {fileID: 0}
   speed: 0
   type: 7
   SentPickup: 0
   PickupIsMine: 0
+  isBusy: 0
 --- !u!114 &114621117852921364
 MonoBehaviour:
   m_ObjectHideFlags: 1

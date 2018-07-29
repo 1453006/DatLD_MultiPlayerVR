@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class GamePlay : MonoBehaviour {
 
-    public GameObject VRplayer;
+    //public GameObject VRplayer;
     public Vector3 spawnPoint;
     public Text status;
 
@@ -26,11 +26,12 @@ new List<GvrPermissionsRequester.PermissionStatus>();
         //get audio permission
         string[]  permissionNames = { "android.permission.RECORD_AUDIO" };
         /// request permisson only call when build on devices
-#if !UNITY_EDITOR
+
         RequestPermissions(permissionNames, status);
-#endif
-        //spawn VR player to screen
-        VRplayer.transform.position = spawnPoint;
+
+
+
+        
 	}
 	
 	// Update is called once per frame

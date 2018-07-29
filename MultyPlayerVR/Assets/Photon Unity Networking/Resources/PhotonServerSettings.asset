@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
   AppID: 02d71794-7bdc-4750-8a52-b80f86b46df0
-  VoiceAppID: e7b596a3-0a4a-4bf0-994e-e0717f01314a
+  VoiceAppID: 8bb46352-b1ec-4859-a9ae-90f73dd2de32
   ChatAppID: 
   HostType: 1
-  PreferredRegion: 2
+  PreferredRegion: 0
   EnabledRegions: -1
   Protocol: 0
   ServerAddress: 
@@ -86,4 +86,6 @@ MonoBehaviour:
   - SendIdleObject
   - SendStartGame
   - SendSetActiveAll
+  - FinishGame
+  - SendFinishGame
   DisableAutoOpenWizard: 1

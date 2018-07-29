@@ -179,6 +179,21 @@ namespace DaydreamElements.Teleport
             }
         }
 
+        public void OnTeleportClear()
+        {
+            // Clear selection state.
+            if (visualizer != null)
+            {
+                visualizer.EndSelection();
+            }
+
+            // Clear transition state.
+            if (transition != null && transition.IsTransitioning)
+            {
+                transition.CancelTransition();
+            }
+        }
+
         void Update()
         {
             if (IsConfigured() == false)
@@ -431,4 +446,6 @@ namespace DaydreamElements.Teleport
             return true;
         }
     }
+
+
 }

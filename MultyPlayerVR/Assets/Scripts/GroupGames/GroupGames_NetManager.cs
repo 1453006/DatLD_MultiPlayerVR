@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Photon;
 using ExitGames.Client.Photon;
 
-public class GroupGames_NetManager:PunBehaviour {
+public class GroupGames_NetManager: Photon.PunBehaviour {
 
     public GameObject avatarPrefabs;
     public GameObject[] listGroupObject;
@@ -19,6 +20,22 @@ public class GroupGames_NetManager:PunBehaviour {
 
     public long startTime;
 
+    private bool isJoinedRoom = false;
+    private BasePopup textPopup = null;
+
+    private void Awake()
+    {
+
+        GameObject obj = GameObject.Find("DontDestroyObject");
+#if TEST_MAP
+        if (obj)
+            obj.SetActive(true);
+#else
+    if (obj)
+            obj.SetActive(false);
+#endif
+
+    }
 
     // Use this for initialization
     void Start()
@@ -28,12 +45,12 @@ public class GroupGames_NetManager:PunBehaviour {
 
         FBSoundManager.PlayMusic("BackgroundMusic2");
 
-        GameObject fx =FBParticleManager.GetEffect("FX_Fire", 2f);
-        if (fx)
-        {
-            fx.transform.position = Vector3.zero;
-            fx.SetActive(true);
-        }
+        //GameObject fx =FBParticleManager.GetEffect("FX_Fire", 2f);
+        //if (fx)
+        //{
+        //    fx.transform.position = Vector3.zero;
+        //    fx.SetActive(true);
+        //}
     }
 
     // Update is called once per frame
@@ -42,6 +59,7 @@ public class GroupGames_NetManager:PunBehaviour {
        
         if(GvrControllerInput.AppButtonDown)
         {
+            Player.instance.teleportController.OnTeleportClear();
             if (PopupManager.IsValidShowPopup())
             {
                 PopupManager.ShowDialog(inventoryUI.name, -1);
@@ -89,6 +107,10 @@ public class GroupGames_NetManager:PunBehaviour {
 
     public override void OnJoinedRoom()
     {
+        isJoinedRoom = true;
+
+        if (Inventory.instance != null)
+            Inventory.instance.LoadInventory();
         Debug.Log("OnJoinedRoom() called by PUN. Now this client is in a room. From here on, your game would be running. For reference, all callbacks are listed in enum: PhotonNetworkingMessage");
 
         Debug.Log(PhotonNetwork.room.Name);
@@ -116,27 +138,51 @@ public class GroupGames_NetManager:PunBehaviour {
         }
     }
 
-
-    public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)
-    {
-        //other disconnect
-        Debug.Log("Other player disconnected! " + otherPlayer.ToStringFull());
-    }
-
-    public override void OnDisconnectedFromPhoton()
-    {
-        base.OnDisconnectedFromPhoton();
-        //me disconnect
-        if(PhotonNetwork.isMasterClient)
-        {
-            //reset all room properties
-        }
-    }
-
+   
     public override void OnPhotonCustomRoomPropertiesChanged(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
     {
         base.OnPhotonCustomRoomPropertiesChanged(propertiesThatChanged);
         QuestManager.instance.LogRoomProperties();
         QuestManager.instance.SyncObjectWithRoomProbs();
     }
+
+    private void OnApplicationFocus(bool focus)
+    {
+        //if not focus save game
+        if(isJoinedRoom)
+            Inventory.instance.SaveInventory();
+    }
+
+
+    public override void OnDisconnectedFromPhoton()
+    {
+        OnReturnLobby();
+        Debug.Log("Disconnected from Photon");
+
+    }
+
+    public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)
+    {
+        Debug.Log("PhotonPlayer left the room : " + otherPlayer.UserId);
+        if (otherPlayer.IsMasterClient)
+            OnReturnLobby();
+    }
+
+    private void OnReturnLobby()
+    {
+        textPopup = PopupManager.ShowText("No internet!!! return to lobby", 3);
+        textPopup.eventShowPopupCompleted += OnShowPopupCompletted;
+
+    }
+
+    public void OnShowPopupCompletted()
+    {
+        textPopup.eventShowPopupCompleted -= OnShowPopupCompletted;
+        FBFade.instance.fadeIn(2f);
+        FBPoolManager.instance.returnAllObjectsToPool();
+        PhotonNetwork.LeaveRoom();
+        SceneManager.LoadScene("LobbyRoom", LoadSceneMode.Single);
+    }
+
+
 }

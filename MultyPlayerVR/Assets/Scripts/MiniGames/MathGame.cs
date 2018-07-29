@@ -262,6 +262,7 @@ public class MathGame : GameCore, IPunTurnManagerCallbacks
         if (localAnswer == correctNumber)
         {
             this.result = ResultType.LocalWin;
+            FBSoundManager.Play(FBSoundManager.COMBINE_SOUND);
             Debug.Log(" YOU WIN");
         }
         else

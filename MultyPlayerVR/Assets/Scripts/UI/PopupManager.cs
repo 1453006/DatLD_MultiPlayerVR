@@ -53,7 +53,7 @@ public class PopupManager : MonoBehaviour {
         showedPopup = true;
     }
 
-    public static void ShowText(string text, float duration, bool isFollow = true)
+    public static BasePopup ShowText(string text, float duration, bool isFollow = true)
     {
         GameObject go = FBPoolManager.instance.getPoolObject(TEXT_POPUP, FBPoolManager.POOLTYPE.UI);
         BasePopup baseScript = go.GetComponent<BasePopup>();
@@ -64,15 +64,19 @@ public class PopupManager : MonoBehaviour {
         go.transform.position = targetPos;
         go.SetActive(true);
         currentPopup = go;
+        playerPos = Player.instance.gameObject.transform.position;
         showedPopup = true;
+
+        return baseScript;
     }
 
     public static GameObject ShowDialog(string dialogName, float duration, bool isFollow = true,bool _disableWhenMove = true)
     {
+        
         GameObject go = FBPoolManager.instance.getPoolObject(dialogName, FBPoolManager.POOLTYPE.UI);
         BasePopup baseScript = go.GetComponent<BasePopup>();
         baseScript.SetValues(null, isFollow, duration);
-        Vector3 targetPos = Camera.main.transform.position + Camera.main.transform.forward * 3f;
+        Vector3 targetPos = Camera.main.transform.position + Camera.main.transform.forward * 5f;
         targetPos.y = Player.instance.playerHeight + 0.1f;
         go.transform.position = targetPos;
         go.SetActive(true);
@@ -104,10 +108,10 @@ public class PopupManager : MonoBehaviour {
         BasePopup baseScript = go.GetComponent<BasePopup>();
         baseScript.SetValues(parentObj, isFollow, duration);
         go.SetActive(true);
-        currentPopup = go;
+       // currentPopup = go;
         disableWhenMove = false; //we dont want timer disable when player move  out
         playerPos = Player.instance.gameObject.transform.position;
-        showedPopup = true;
+      //  showedPopup = true;
         return go;
     }
 
@@ -125,6 +129,7 @@ public class PopupManager : MonoBehaviour {
    
     public static void DisableCurrentDialog()
     {
+
         DisableDialog(currentPopup);
     }
 
@@ -139,9 +144,12 @@ public class PopupManager : MonoBehaviour {
 
     public static void ShowWrongSignal(Vector3 pos,float duration = 1f, bool isFollow = true)
     {
-        GameObject go = FBPoolManager.instance.getPoolObject(WRONG_SIGNAL_POPUP, FBPoolManager.POOLTYPE.UI);
-        BasePopup baseScript = go.GetComponent<BasePopup>();
-        baseScript.SetValues(null, isFollow, duration);
+        //GameObject go = FBPoolManager.instance.getPoolObject(WRONG_SIGNAL_POPUP, FBPoolManager.POOLTYPE.UI);
+        //BasePopup baseScript = go.GetComponent<BasePopup>();
+        //baseScript.SetValues(null, isFollow, duration);
+        FBSoundManager.Play(FBSoundManager.WRONG_SOUND);
+        GameObject go = FBParticleManager.GetEffect("wrong_signal", 2f);
+
         go.transform.position = pos;
         go.SetActive(true);
     }

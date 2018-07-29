@@ -118,7 +118,7 @@ public class NetworkPlayer : Photon.MonoBehaviour {
         {
 
             //visualLowerJaw.localPosition = new Vector3(lowerJawInitPos.x + MicInput.instance.MicLoudness / 15f, lowerJawInitPos.y, lowerJawInitPos.z);
-            visualLowerJaw.transform.DOScaleY(visualLowerJawScaleY + MicInput.instance.MicLoudness / 4f, 0.2f);
+            visualLowerJaw.transform.DOScaleY(visualLowerJawScaleY + MicInput.instance.MicLoudness , 0.2f);
             GvrBasePointer laserPointerImpl = (GvrBasePointer)GvrPointerInputModule.Pointer;
 
 

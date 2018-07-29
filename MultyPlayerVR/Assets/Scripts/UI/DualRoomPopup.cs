@@ -7,7 +7,6 @@ public class DualRoomPopup : MonoBehaviour {
     #region QuitDialog
     public void QuitDialog_YesBtnDown()
     {
-       MiniGameManager.instance.OnEndGame();
         PopupManager.DisableDialog(this.gameObject);
     }
 
@@ -16,6 +15,26 @@ public class DualRoomPopup : MonoBehaviour {
         PopupManager.DisableDialog(this.gameObject);
     }
     #endregion
+
+
+    #region GoToLobby
+    public void GoToLobby_YesBtnDown()
+    {
+        PopupManager.DisableDialog(this.gameObject);
+        PhotonNetwork.LeaveRoom();
+        PhotonNetwork.LoadLevel("LobbyRoom");
+    }
+
+    public void GoToLobby_NoBtnDown()
+    {
+        PopupManager.DisableDialog(this.gameObject);
+    }
+    #endregion
+
+    public void JoinRoom_YesBtnDown(string  type)
+    {
+        
+    }
 
 
 }

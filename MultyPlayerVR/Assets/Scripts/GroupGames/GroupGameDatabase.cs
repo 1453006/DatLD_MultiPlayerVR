@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[SerializeField]
 public class ItemData
 {
     public Item Item;
@@ -11,7 +10,20 @@ public class ItemData
     public int SlotIndex;
 }
 
-[SerializeField]
+[System.Serializable]
+public class ItemSaveData
+{
+    public int itemId;
+    public int amount;
+}
+
+[System.Serializable]
+public class ListItemSaveData
+{
+    public List<ItemSaveData> list;
+}
+
+[System.Serializable]
 public class listItemData
 {
     public ItemData[] list;
